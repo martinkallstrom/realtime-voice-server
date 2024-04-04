@@ -31,8 +31,6 @@ Make sure you `pip install -r requirements.txt` for each demo project, so you ca
 
 ## Demos:
 
-Please be sure to check the corresponding README and env.example for guidance for how to get it running.
-
 ### Simple Chat Bot (CPU)
 
 [ image ]
@@ -78,13 +76,19 @@ Process-driven workflow that demonstrates how to trigger various tools throughou
 - LLM: Fireworks
 - UI: Daily Prebuilt
 
-### Other demos:
+## Other demos:
 
 #### Chat Bot with Silero VAD (GPU)
 
 [ image ]
 
-By default the Daily AI framework uses a CPU-bound version of VAD (voice activity detection.) If working with hardware acceleration capabilities, such as CUDA, it's possible leverag trained models for greater accuracy.
+By default the Daily AI framework uses a CPU-bound version of VAD (voice activity detection.) If your agent targets hardware-capable machines with CUDA support, it's possible to infer from trained models for greater accuracy.
+
+#### Moondream Vision Bot (GPU)
+
+[ image ]
+
+...
 
 ---
 
