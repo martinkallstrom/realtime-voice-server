@@ -8,7 +8,7 @@ Collection of self-contained real-time AI demo applications built with [dailyai]
 
 ## Quickstart
 
-Each demo is standalone, with its own set of project files, dependencies and configuration variables. This repo intentionally avoids shared code across projects, so you can grab whichever folder / demo you want to work with as a starting point.
+Each demo is a standalone project with its own set of dependencies and configuration variables. This repo intentionally avoids shared code across projects &mdash; you can grab whichever demo folder you want to work with as a starting point.
 
 We recommend you start with a virtual environment:
 
@@ -19,10 +19,12 @@ python -m venv venv
 source venv/bin/active 
 
 # Windows:
-source venv/Scripts/Active
+source venv/Scripts/Activate
 ```
 
 From there, follow the getting started steps in the README for each demo.
+
+Make sure you `pip install -r requirements.txt` for each demo project, so you can be sure to have the necessary service dependencies that extend the functionality of Daily AI. You can read more about the framework architecture [here](https://github.com/daily-co/dailyai?tab=readme-ov-file#getting-started).
 
 
 ---
