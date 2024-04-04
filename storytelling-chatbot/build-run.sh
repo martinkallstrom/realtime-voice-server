@@ -1,0 +1,1 @@
+python3 ./server/main.py --port 7860 --host 0.0.0.0
