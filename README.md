@@ -93,15 +93,15 @@ By default the Daily AI framework uses a CPU-bound version of VAD (voice activit
 
 ## Deployment
 
-For each of these demos, we've included a `Dockerfile`. Out of the box, this should provide everything needed to get the respective demo running on a VM.
+For each of these demos we've included a `Dockerfile`. Out of the box, this should provide everything needed to get the respective demo running on a VM.
 
-There is a typical pattern that we've found works best for managing and spawning Daily AI agents which we followed across all these demos:
+There is a typical pattern that we've found works best for managing and spawning Daily AI agents:
 
 [ diagram of agent spawning flow ]
 
-Of course, these demos attempt to keep things simple and are unopinionated regarding at scale use-cases. When an Daily AI agent is summoned into a session, all we do is run a new subprocess on the same machine instance &mdash; useful for small tests, but not so great for production grade apps with many concurrent users.
+Of course, these demos attempt to keep things simple and are unopinionated regarding at scale use-cases. When a Daily AI agent is summoned into a session, all we do is run a new subprocess on the same machine instance &mdash; useful for small tests, but not so great for production grade apps with many concurrent users.
 
-Creating virualized worker pools and on-demand virtual instances is out of scope for these examples, but we have shared various implementation ideas here.
+Creating virualized worker pools and on-demand instances is out of scope for these examples, but we have shared various implementation ideas here.
 
 ---
 
