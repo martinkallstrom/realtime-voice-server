@@ -18,14 +18,16 @@ python -m venv venv
 # Mac / Linux:
 source venv/bin/active 
 
-Windows:
+# Windows:
 source venv/Scripts/Active
 ```
 
 From there, follow the getting started steps in the README for each demo.
+
+
 ---
 
-## Demos
+## Demos:
 
 Please be sure to check the corresponding README and env.example for guidance for how to get it running.
 
@@ -74,7 +76,7 @@ Process-driven workflow that demonstrates how to trigger various tools throughou
 - LLM: Fireworks
 - UI: Daily Prebuilt
 
-### Other
+### Other demos:
 
 #### Chat Bot with Silero VAD (GPU)
 
