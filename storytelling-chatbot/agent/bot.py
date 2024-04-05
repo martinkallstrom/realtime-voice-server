@@ -1,32 +1,58 @@
-import time
+import asyncio
+import aiohttp
+import logging
+import os
+import argparse
+
+from dailyai.pipeline.frames import EndFrame, TextFrame
+from dailyai.pipeline.pipeline import Pipeline
+from dailyai.transports.daily_transport import DailyTransport
+from dailyai.services.elevenlabs_ai_service import ElevenLabsTTSService
+
+from dotenv import load_dotenv
+load_dotenv(override=True)
+
+logging.basicConfig(format=f"%(levelno)s %(asctime)s %(message)s")
+logger = logging.getLogger("dailyai")
+logger.setLevel(logging.DEBUG)
 
 
-class Bot:
-    def __init__(self):
-        self.running = True
+async def main(room_url, token=None):
+    async with aiohttp.ClientSession() as session:
+        transport = DailyTransport(
+            room_url,
+            token,
+            "Say One Thing",
+            mic_enabled=True,
+        )
 
-    def start(self):
-        start_time = time.time()
-        while self.running:
-            try:
-                # Your code logic here
+        tts = ElevenLabsTTSService(
+            aiohttp_session=session,
+            api_key=os.getenv("ELEVENLABS_API_KEY"),
+            voice_id=os.getenv("ELEVENLABS_VOICE_ID"),
+        )
 
-                # Check if 15 seconds have elapsed
-                if time.time() - start_time >= 15:
-                    self.stop()
-            except KeyboardInterrupt:
-                # If the user presses Ctrl+C, break the loop and exit
-                break
+        pipeline = Pipeline([tts])
 
-    def status(self) -> str:
-        return "running" if self.running else "stopped"
+        # Register an event handler so we can play the audio when the
+        # participant joins.
+        @transport.event_handler("on_participant_joined")
+        async def on_participant_joined(transport, participant):
+            if participant["info"]["isLocal"]:
+                return
 
-    def stop(self):
-        self.running = False
+            participant_name = participant["info"]["userName"] or ''
+            await pipeline.queue_frames([TextFrame("Hello there, " + participant_name + "!"), EndFrame()])
+
+        await transport.run(pipeline)
+        del tts
 
 
-# Create an instance of the Bot class
-bot = Bot()
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Daily Storyteller Bot")
+    parser.add_argument("-u", type=str, help="Room URL")
+    parser.add_argument("-t", type=str, help="Token")
+    config = parser.parse_args()
 
-# Start the bot
-bot.start()
+    asyncio.run(main(config.u, config.t))
