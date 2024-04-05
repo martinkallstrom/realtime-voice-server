@@ -9,7 +9,7 @@ from dailyai.pipeline.frames import TextFrame, LLMMessagesFrame
 from dailyai.transports.daily_transport import DailyTransport
 from dailyai.services.anthropic_llm_service import AnthropicLLMService
 
-from agent.debug_service import FalImageGenService
+from services.fal import FalImageGenService
 # from dailyai.services.elevenlabs_ai_service import ElevenLabsTTSService
 
 from dotenv import load_dotenv

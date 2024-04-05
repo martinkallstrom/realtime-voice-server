@@ -85,10 +85,11 @@ async def start_agent(request: Request) -> JSONResponse:
     try:
         proc = subprocess.Popen(
             [
-                f"python3 -m agent.bot -u {room_url} -t {token}"
+                f"python3 -m bot -u {room_url} -t {token}"
             ],
             shell=True,
             bufsize=1,
+            cwd=os.path.dirname(os.path.abspath(__file__))
         )
         bot_procs[proc.pid] = (proc, room_url)
     except Exception as e:

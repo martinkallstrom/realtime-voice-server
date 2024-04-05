@@ -58,4 +58,4 @@ COPY --chown=user server.py server.py
 
 ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libtcmalloc.so.4
 
-CMD ["python3", "server.py", "--port", "$FAST_API_PORT"]
+CMD ["python3", "src/server.py", "--port", "$FAST_API_PORT"]

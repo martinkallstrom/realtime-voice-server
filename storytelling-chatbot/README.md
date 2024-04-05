@@ -58,11 +58,11 @@ The build UI files can be found in `frontend/out`
 
 Start the API / bot manager:
 
-`python server.py`
+`python src/server.py`
 
 If you'd like to run a custom domain or port:
 
-`python server.py --host somehost --p 7777`
+`python src/server.py --host somehost --p 7777`
 
 
 ➡️ Open the host URL in your browser
