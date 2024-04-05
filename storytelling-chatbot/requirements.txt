@@ -1,3 +1,4 @@
+dailyai[anthropic,fal]
 fastapi
 uvicorn
 requests

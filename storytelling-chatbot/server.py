@@ -1,7 +1,6 @@
 import os
 import argparse
 import subprocess
-import time
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -12,7 +11,7 @@ from fastapi.responses import FileResponse, JSONResponse
 
 from utils.daily_helpers import create_room as _create_room, get_token
 
-# Store the subprocesses in a dictionary
+# Bot sub-process dict for status reporting
 bot_procs = {}
 
 app = FastAPI()
@@ -30,21 +29,9 @@ app.mount("/static", StaticFiles(directory="frontend/out",
           html=True), name="static")
 
 
-@app.get("/{path_name:path}", response_class=FileResponse)
+@app.get("/", response_class=FileResponse)
 async def catch_all(path_name: str) -> FileResponse:
-    if path_name == "":
-        return FileResponse("frontend/out/index.html")
-
-    file_path = Path("frontend/out") / path_name
-
-    if file_path.is_file():
-        return file_path
-
-    html_file_path = file_path.with_suffix(".html")
-    if html_file_path.is_file():
-        return FileResponse(html_file_path)
-
-    raise HTTPException(status_code=450, detail="Incorrect API call")
+    return FileResponse("frontend/out/index.html")
 
 
 @app.post("/create")
@@ -89,7 +76,26 @@ async def start_agent(request: Request) -> JSONResponse:
         raise HTTPException(
             status_code=500, detail=f"Failed to start subprocess: {e}")
 
-    return JSONResponse({"started": proc.pid, "room_url": room_url})
+    return JSONResponse({"bot_id": proc.pid, "room_url": room_url})
+
+
+@app.get("/status/{pid}")
+def get_status(pid: int):
+    # Look up the subprocess
+    proc = bot_procs.get(pid)
+
+    # If the subprocess doesn't exist, return an error
+    if not proc:
+        raise HTTPException(
+            status_code=404, detail=f"Bot with process id: {pid} not found")
+
+    # Check the status of the subprocess
+    if proc.poll() is None:
+        status = "running"
+    else:
+        status = "finished"
+
+    return JSONResponse({"bot_id": pid, "status": status})
 
 
 if __name__ == "__main__":
