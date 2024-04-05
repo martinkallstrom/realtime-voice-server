@@ -1,4 +1,6 @@
 import os
+import argparse
+import subprocess
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -7,8 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 
-import argparse
-
+from utils.daily_helpers import create_token
 
 app = FastAPI()
 
@@ -47,18 +48,32 @@ async def catch_all(path_name: str):
 
 @app.post("/start")
 async def start_agent(request: Request):
-    """
-    Spawn an agent worker
+    data = await request.json()
 
+    # Is this a webhook creation request?
+    if "test" in data:
+        return JSONResponse({"test": True})
+
+    # Ensure the room property is present
+    room_url = data.get('room')
+    if not room_url:
+        raise HTTPException(
+            status_code=500, detail="Missing 'room' property in request data. Cannot start agent without a target room!")
+
+    token = create_token(room_url)
+
+    # Spawn a new agent, and join the user session
+    # Note: this is mostly for demonstration purposes (refer to 'deployment' in README)
+    """
     proc = subprocess.Popen(
-    [
-        f"python3 {bot_path} -u {room_url} -k {daily_api_key} {extra_args}"
-    ],
-    shell=True,
-    bufsize=1,
+        [
+            f"python3 ./agent -u {room_url} -t {token}"
+        ],
+        shell=True,
+        bufsize=1,
     )
     """
-    return JSONResponse({"success": True})
+    return JSONResponse({"started": True})
 
 
 if __name__ == "__main__":

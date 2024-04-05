@@ -1,4 +1,3 @@
-dailyai
 fastapi
 uvicorn
 requests
