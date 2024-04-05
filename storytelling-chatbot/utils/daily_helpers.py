@@ -1,4 +1,5 @@
 
+import urllib.parse
 import os
 import time
 import urllib
@@ -49,6 +50,19 @@ def create_room() -> tuple[str, str]:
     return room_url, room_name
 
 
+def get_name_from_url(room_url: str) -> str:
+    """
+    Extracts the name from a given room URL.
+
+    Args:
+        room_url (str): The URL of the room.
+
+    Returns:
+        str: The extracted name from the room URL.
+    """
+    return urllib.parse.urlparse(room_url).path[1:]
+
+
 def get_token(room_url: str) -> str:
     """
     Retrieves a meeting token for the specified Daily room URL.
@@ -73,7 +87,7 @@ def get_token(room_url: str) -> str:
             "No Daily API key specified. set DAILY_API_KEY in your environment to specify a Daily API key, available from https://dashboard.daily.co/developers.")
 
     expiration: float = time.time() + 60 * 60
-    room_name = urllib.parse.urlparse(room_url).path[1:]
+    room_name = get_name_from_url(room_url)
 
     res: requests.Response = requests.post(
         f"https://{daily_api_path}/meeting-tokens",
