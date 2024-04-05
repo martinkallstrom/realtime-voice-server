@@ -2,7 +2,7 @@
 
 [video]
 
-This example shows how to build a voice-driven interactive storytelling experience. 
+This example shows how to build a voice-driven interactive storytelling experience.
 It periodically prompts the user for input for a 'choose your own adventure' style experience.
 We add a bit of visual flair to our story by generating images at lightning speed.
 
@@ -24,18 +24,18 @@ Streams the LLM response to audio
 
 Adds pictures to our story (really fast!) Prompting is quite key for style consistency, see here: ...
 
-
 ---
-
 
 ## Setup
 
 **Install requirements**
+
 ```
 pip install -r requirements.txt
 ```
 
 **Create environment file and set variables:**
+
 ```
 mv env.example .env
 ```
@@ -50,9 +50,7 @@ npm install / yarn
 npm run build
 ```
 
-
-The build UI files can be found in `frontend/out`
-
+The build UI files can be found in `frontend/public`
 
 ## Running it locally
 
@@ -64,20 +62,15 @@ If you'd like to run a custom domain or port:
 
 `python src/server.py --host somehost --p 7777`
 
-
 ➡️ Open the host URL in your browser
 
-
 ---
-
 
 ## How does it work?
 
 ...
 
-
 ---
-
 
 ## Deploying
 

@@ -2,10 +2,13 @@ import os
 import argparse
 import subprocess
 import atexit
+from pathlib import Path
+from typing import Optional
+
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 
 from utils.daily_helpers import create_room as _create_room, get_token
 
@@ -36,13 +39,9 @@ app.add_middleware(
 )
 
 # Mount the static directory
-app.mount("/static", StaticFiles(directory="frontend/out",
+STATIC_DIR = "frontend/public"
+app.mount("/static", StaticFiles(directory=STATIC_DIR,
           html=True), name="static")
-
-
-@app.get("/", response_class=FileResponse)
-async def catch_all(path_name: str) -> FileResponse:
-    return FileResponse("frontend/out/index.html")
 
 
 @app.post("/create")
@@ -116,6 +115,24 @@ def get_status(pid: int):
         status = "finished"
 
     return JSONResponse({"bot_id": pid, "status": status})
+
+
+@app.get("/{path_name:path}", response_class=FileResponse)
+async def catch_all(path_name: Optional[str] = ""):
+    print(path_name)
+    if path_name == "":
+        return FileResponse(f"{STATIC_DIR}/index.html")
+
+    file_path = Path(STATIC_DIR) / path_name
+
+    if file_path.is_file():
+        return file_path
+
+    html_file_path = file_path.with_suffix(".html")
+    if html_file_path.is_file():
+        return FileResponse(html_file_path)
+
+    raise HTTPException(status_code=450, detail="Incorrect API call")
 
 
 if __name__ == "__main__":
