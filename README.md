@@ -1,4 +1,4 @@
-# Daily AI example apps
+# Daily AI examples
 
 Collection of self-contained real-time AI demo applications built with [dailyai](https://github.com/daily-co/dailyai/)
 
@@ -16,7 +16,7 @@ We recommend you start with a virtual environment:
 python -m venv venv
 
 # Mac / Linux:
-source venv/bin/active 
+source venv/bin/activate
 
 # Windows:
 source venv/Scripts/Activate
