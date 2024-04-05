@@ -39,7 +39,7 @@ app.add_middleware(
 )
 
 # Mount the static directory
-STATIC_DIR = "frontend/public"
+STATIC_DIR = "frontend/build"
 app.mount("/static", StaticFiles(directory=STATIC_DIR,
           html=True), name="static")
 

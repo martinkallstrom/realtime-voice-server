@@ -7,8 +7,8 @@ const config = {
 
 	kit: {
 		adapter: adapter({
-			pages: 'public',
-			assets: 'public',
+			pages: 'build',
+			assets: 'build',
 			fallback: undefined,
 			precompress: false,
 			strict: true

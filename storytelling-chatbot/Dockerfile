@@ -53,8 +53,7 @@ COPY --chown=user frontend/ frontend/
 RUN cd frontend && npm run build
 
 # Copy everything else
-COPY --chown=user app/ app/
-COPY --chown=user server.py server.py
+COPY --chown=user src/ src/
 
 ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libtcmalloc.so.4
 
