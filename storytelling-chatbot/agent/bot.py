@@ -4,10 +4,11 @@ import logging
 import os
 import argparse
 
-from dailyai.pipeline.frames import EndFrame, TextFrame
 from dailyai.pipeline.pipeline import Pipeline
+from dailyai.pipeline.frames import TextFrame
 from dailyai.transports.daily_transport import DailyTransport
-from dailyai.services.elevenlabs_ai_service import ElevenLabsTTSService
+from agent.debug_service import FalImageGenService
+# from dailyai.services.elevenlabs_ai_service import ElevenLabsTTSService
 
 from dotenv import load_dotenv
 load_dotenv(override=True)
@@ -22,30 +23,54 @@ async def main(room_url, token=None):
         transport = DailyTransport(
             room_url,
             token,
-            "Say One Thing",
+            "Storyteller Bot",
             mic_enabled=True,
+            camera_enabled=True,
+            camera_width=768,
+            camera_height=768,
         )
 
+        """
         tts = ElevenLabsTTSService(
             aiohttp_session=session,
             api_key=os.getenv("ELEVENLABS_API_KEY"),
             voice_id=os.getenv("ELEVENLABS_VOICE_ID"),
         )
+        """
+        fal_params = FalImageGenService.InputParams(
+            image_size={
+                "width": 768,
+                "height": 768
+            },
+            expand_prompt=True,
+        )
 
-        pipeline = Pipeline([tts])
+        imagegen = FalImageGenService(
+            aiohttp_session=session,
+            model="fal-ai/fast-lightning-sdxl",
+            params=fal_params,
+            key_id=os.getenv("FAL_KEY_ID"),
+            key_secret=os.getenv("FAL_KEY_SECRET"),
+        )
 
-        # Register an event handler so we can play the audio when the
-        # participant joins.
-        @transport.event_handler("on_participant_joined")
-        async def on_participant_joined(transport, participant):
-            if participant["info"]["isLocal"]:
-                return
+        pipeline = Pipeline([imagegen])
 
-            participant_name = participant["info"]["userName"] or ''
-            await pipeline.queue_frames([TextFrame("Hello there, " + participant_name + "!"), EndFrame()])
+        @transport.event_handler("on_first_other_participant_joined")
+        async def on_first_other_participant_joined(transport):
+            # Note that we do not put an EndFrame() item in the pipeline for this demo.
+            # This means that the bot will stay in the channel until it times out.
+            # An EndFrame() in the pipeline would cause the transport to shut
+            # down.
+            await pipeline.queue_frames(
+                [
+                    TextFrame("a doggo"),
+                    TextFrame("some chocolate"),
+                    TextFrame("a tiny frog"),
+                    TextFrame("a cat in the style of picasso")
+                ]
+            )
 
         await transport.run(pipeline)
-        del tts
 
 
 if __name__ == "__main__":

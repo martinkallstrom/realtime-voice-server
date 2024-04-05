@@ -1,7 +1,7 @@
 import os
 import argparse
 import subprocess
-
+import atexit
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -9,8 +9,19 @@ from fastapi.responses import FileResponse, JSONResponse
 
 from utils.daily_helpers import create_room as _create_room, get_token
 
-# Bot sub-process dict for status reporting
+# Bot sub-process dict for status reporting and concurrency control
 bot_procs = {}
+
+
+def cleanup():
+    # Clean up function, just to be extra safe
+    for proc in bot_procs.values():
+        proc.terminate()
+        proc.wait()
+
+
+atexit.register(cleanup)
+
 
 app = FastAPI()
 
@@ -53,6 +64,13 @@ async def start_agent(request: Request) -> JSONResponse:
         raise HTTPException(
             status_code=500, detail="Missing 'room' property in request data. Cannot start agent without a target room!")
 
+    # Check if there is already an existing process running in this room
+    for pid, proc in bot_procs.items():
+        if proc[1] == room_url:
+            raise HTTPException(
+                status_code=500, detail=f"Bot already running in room: {room_url}")
+
+    # Get the token for the room
     token = get_token(room_url)
 
     if not token:
@@ -69,7 +87,7 @@ async def start_agent(request: Request) -> JSONResponse:
             shell=True,
             bufsize=1,
         )
-        bot_procs[proc.pid] = proc
+        bot_procs[proc.pid] = (proc, room_url)
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Failed to start subprocess: {e}")
@@ -88,7 +106,7 @@ def get_status(pid: int):
             status_code=404, detail=f"Bot with process id: {pid} not found")
 
     # Check the status of the subprocess
-    if proc.poll() is None:
+    if proc[0].poll() is None:
         status = "running"
     else:
         status = "finished"
