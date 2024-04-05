@@ -22,12 +22,13 @@ source venv/bin/activate
 source venv/Scripts/Activate
 ```
 
-From there, follow the getting started steps in the README for each demo.
+Next, follow the steps in the README for each demo.
 
-Make sure you `pip install -r requirements.txt` for each demo project, so you can be sure to have the necessary service dependencies that extend the functionality of Daily AI. You can read more about the framework architecture [here](https://github.com/daily-co/dailyai?tab=readme-ov-file#getting-started).
+Note: make sure you `pip install -r requirements.txt` for each demo project, so you can be sure to have the necessary service dependencies that extend the functionality of Daily AI. You can read more about the framework architecture [here](https://github.com/daily-co/dailyai?tab=readme-ov-file#getting-started).
 
 
 ---
+
 
 ## Demos:
 
@@ -90,12 +91,24 @@ By default the Daily AI framework uses a CPU-bound version of VAD (voice activit
 
 ...
 
+
 ---
 
-## Local development
+
+## What is Daily, do I need it to run my bots?
+
 ...
 
+
+### What is Daily Prebuilt?
+
+To get up and running with your bots quickly, you can make use of Daily's hosted user interface for real-time video and audio calls. Daily Prebuilt will allow you to join any room on your domain via a URL, for example: `https://[your-domains].daily.co/[room_name]`. 
+
+Daily Prebuilt has been designed as a fully-featured video calling experience, and whilst it may not fit every bot use-case, it can definitely serve as a helpful debugging tool or method for avoiding building your own frontend.
+
+
 ---
+
 
 ## Deployment
 
@@ -105,10 +118,14 @@ There is a typical pattern that we've found works best for managing and spawning
 
 [ diagram of agent spawning flow ]
 
-Of course, these demos attempt to keep things simple and are unopinionated regarding at scale use-cases. When a Daily AI agent is summoned into a session, all we do is run a new subprocess on the same machine instance &mdash; useful for small tests, but not so great for production grade apps with many concurrent users.
+Of course, these demos attempt to keep things simple and are unopinionated regarding scalability. When a Daily AI agent is summoned into a session, all we do is run a new subprocess on the same machine instance &mdash; useful for small tests, but not so great for production grade apps with many concurrent users.
 
 Creating virualized worker pools and on-demand instances is out of scope for these examples, but we have shared various implementation ideas here.
 
+
 ---
 
+
 ## Getting help
+
+...

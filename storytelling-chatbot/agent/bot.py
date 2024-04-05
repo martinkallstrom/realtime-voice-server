@@ -5,8 +5,10 @@ import os
 import argparse
 
 from dailyai.pipeline.pipeline import Pipeline
-from dailyai.pipeline.frames import TextFrame
+from dailyai.pipeline.frames import TextFrame, LLMMessagesFrame
 from dailyai.transports.daily_transport import DailyTransport
+from dailyai.services.anthropic_llm_service import AnthropicLLMService
+
 from agent.debug_service import FalImageGenService
 # from dailyai.services.elevenlabs_ai_service import ElevenLabsTTSService
 
@@ -37,6 +39,11 @@ async def main(room_url, token=None):
             voice_id=os.getenv("ELEVENLABS_VOICE_ID"),
         )
         """
+
+        llm = AnthropicLLMService(
+            api_key=os.getenv("ANTHROPIC_API_KEY")
+        )
+
         fal_params = FalImageGenService.InputParams(
             image_size={
                 "width": 768,
@@ -53,7 +60,7 @@ async def main(room_url, token=None):
             key_secret=os.getenv("FAL_KEY_SECRET"),
         )
 
-        pipeline = Pipeline([imagegen])
+        pipeline = Pipeline(processors=[llm, imagegen])
 
         @transport.event_handler("on_first_other_participant_joined")
         async def on_first_other_participant_joined(transport):
@@ -63,6 +70,12 @@ async def main(room_url, token=None):
             # down.
             await pipeline.queue_frames(
                 [
+                    LLMMessagesFrame(messages=[
+                        {
+                            "role": "system",
+                            "content": f"Describe a nature photograph suitable for use in a calendar, for the month of {month}. Include only the image description with no preamble. Limit the description to one sentence, please.",
+                        }
+                    ]),
                     TextFrame("a doggo"),
                     TextFrame("some chocolate"),
                     TextFrame("a tiny frog"),
