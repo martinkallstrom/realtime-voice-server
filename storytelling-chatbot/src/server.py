@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 
-from utils.daily_helpers import create_room as _create_room, get_token
+from utils.daily_helpers import create_room as _create_room, get_token, get_name_from_url
 
 MAX_BOTS_PER_ROOM = 1
 
@@ -39,16 +39,24 @@ app.add_middleware(
 )
 
 # Mount the static directory
-STATIC_DIR = "frontend/build"
+STATIC_DIR = "frontend/out"
 app.mount("/static", StaticFiles(directory=STATIC_DIR,
           html=True), name="static")
 
 
 @app.post("/create")
 async def create_room(request: Request) -> JSONResponse:
-    room_url, room_name = _create_room()
+    data = await request.json()
 
-    return JSONResponse({"room_url": room_url, "room_name": room_name})
+    if "room_url" in data:
+        room_url = data.get('room_url')
+        room_name = get_name_from_url(room_url)
+    else:
+        room_url, room_name = _create_room()
+
+    token = get_token(room_url)
+
+    return JSONResponse({"room_url": room_url, "room_name": room_name, "token": token})
 
 
 @app.post("/start")
