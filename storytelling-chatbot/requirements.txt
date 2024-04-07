@@ -1,5 +1,5 @@
 --index-url https://test.pypi.org/simple/ 
-dailyai[daily,anthropic,fal]==0.0.5dev18
+dailyai[daily,openai,anthropic,fal]==0.0.5
 fastapi
 uvicorn
 requests

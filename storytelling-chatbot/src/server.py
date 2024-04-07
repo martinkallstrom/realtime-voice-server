@@ -131,7 +131,7 @@ async def catch_all(path_name: Optional[str] = ""):
     if path_name == "":
         return FileResponse(f"{STATIC_DIR}/index.html")
 
-    file_path = Path(STATIC_DIR) / path_name
+    file_path = Path(STATIC_DIR) / (path_name or "")
 
     if file_path.is_file():
         return file_path

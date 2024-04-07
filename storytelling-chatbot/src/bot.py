@@ -3,9 +3,10 @@ import aiohttp
 import logging
 import os
 import argparse
+from typing import AsyncGenerator
 
 from dailyai.pipeline.pipeline import Pipeline
-from dailyai.pipeline.frames import TextFrame, EndPipeFrame, EndFrame, LLMMessagesFrame
+from dailyai.pipeline.frames import TextFrame, Frame, LLMMessagesFrame
 from dailyai.pipeline.aggregators import (
     LLMAssistantContextAggregator,
     LLMUserContextAggregator,
@@ -13,6 +14,7 @@ from dailyai.pipeline.aggregators import (
     LLMResponseAggregator,
 )
 from dailyai.transports.daily_transport import DailyTransport
+from dailyai.pipeline.frame_processor import FrameProcessor
 # from dailyai.services.anthropic_llm_service import AnthropicLLMService
 from dailyai.services.elevenlabs_ai_service import ElevenLabsTTSService
 from dailyai.services.open_ai_services import OpenAILLMService
@@ -28,6 +30,18 @@ load_dotenv(override=True)
 logging.basicConfig(format=f"[STORYBOY] %(levelno)s %(asctime)s %(message)s")
 logger = logging.getLogger("dailyai")
 logger.setLevel(logging.INFO)
+
+
+class StoryImageGenerator(FrameProcessor):
+    def __init__(self, llm, img):
+        self._llm = llm
+        self._img = img
+
+    async def process_frame(self, frame: Frame) -> AsyncGenerator[Frame, None]:
+        if isinstance(frame, TextFrame):
+            yield frame
+        else:
+            yield frame
 
 
 async def main(room_url, token=None):
@@ -66,7 +80,6 @@ async def main(room_url, token=None):
             voice_id=os.getenv("ELEVENLABS_VOICE_ID"),
         )
 
-        """
         fal_service_params = FalImageGenService.InputParams(
             image_size={
                 "width": 768,
@@ -82,30 +95,27 @@ async def main(room_url, token=None):
             key_id=os.getenv("FAL_KEY_ID"),
             key_secret=os.getenv("FAL_KEY_SECRET"),
         )
-        """
         # --------------- Setup ----------------- #
 
-        message_history = [LLM_INTRO_PROMPT]
+        image_generator = StoryImageGenerator(llm_service, fal_service)
+        message_history = [LLM_BASE_PROMPT]
 
-        # llm_responses = LLMResponseAggregator(messages)
-        # user_responses = UserResponseAggregator(messages)
-        user_context = LLMUserContextAggregator(
-            message_history, transport._my_participant_id)
-        llm_context = LLMAssistantContextAggregator(
-            message_history, transport._my_participant_id)
+        llm_responses = LLMResponseAggregator(message_history)
+        user_responses = UserResponseAggregator(message_history)
 
         # Wait for participant join to kick off our story
         # start_story_event = asyncio.Event()
 
-        fl = FrameLogger("Inner")
-        fl2 = FrameLogger("Outer")
+        fl = FrameLogger("### After Image Generation")
 
         pipeline = Pipeline(processors=[
-            fl,
+            user_responses,
             # user_context,
             llm_service,
-            fl2,
+            image_generator,
+            fl,
             tts_service,
+            llm_responses
             # llm_context
         ])
 
@@ -117,11 +127,7 @@ async def main(room_url, token=None):
             await pipeline.queue_frames([LLMMessagesFrame(message_history)])
 
         async def run_conversation():
-            await transport.run_pipeline(
-                pipeline,
-                post_processor=LLMResponseAggregator(message_history),
-                pre_processor=UserResponseAggregator(message_history),
-            )
+            await transport.run_pipeline(pipeline)
 
         transport.transcription_settings["extra"]["endpointing"] = True
         transport.transcription_settings["extra"]["punctuate"] = True
