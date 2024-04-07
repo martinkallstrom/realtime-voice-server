@@ -3,7 +3,6 @@ import aiohttp
 import logging
 import os
 import argparse
-from typing import AsyncGenerator
 
 from dailyai.pipeline.pipeline import Pipeline
 from dailyai.pipeline.frames import EndPipeFrame, LLMMessagesFrame

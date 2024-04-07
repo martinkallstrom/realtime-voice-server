@@ -12,11 +12,16 @@ from dailyai.pipeline.frames import (
     UserStoppedSpeakingFrame,
 )
 
+# -------------- Frame Types ------------- #
+
+# Frame for when the story begins
+
 
 class StoryStartFrame(TextFrame):
     pass
 
 
+# Frame for image prompt at the start of each sentence
 class StoryImagePromptFrame(TextFrame):
     @property
     def text(self):
@@ -27,13 +32,17 @@ class StoryImagePromptFrame(TextFrame):
         self._text = value
 
 
+# Frame for each sentence in the story before a [break]
 class StoryPageFrame(TextFrame):
     pass
 
 
+# Frame for prompting the user to continue the story
 class StoryPromptFrame(TextFrame):
     pass
 
+
+# ------------ Frame Processors ----------- #
 
 class StoryImageProcessor(FrameProcessor):
     """
