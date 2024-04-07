@@ -6,7 +6,7 @@ import argparse
 from typing import AsyncGenerator
 
 from dailyai.pipeline.pipeline import Pipeline
-from dailyai.pipeline.frames import TextFrame, Frame, LLMMessagesFrame
+from dailyai.pipeline.frames import EndPipeFrame, Frame, LLMMessagesFrame
 from dailyai.pipeline.aggregators import (
     UserResponseAggregator,
     LLMResponseAggregator,
@@ -19,7 +19,7 @@ from dailyai.services.open_ai_services import OpenAILLMService
 from dailyai.services.ai_services import FrameLogger
 
 from services.fal import FalImageGenService
-from processor import StoryProcessor, StoryPromptFrame
+from processor import StoryProcessor, StoryPageFrame
 from prompts import LLM_BASE_PROMPT, LLM_INTRO_PROMPT
 
 
@@ -38,10 +38,11 @@ class StoryImageGenerator(FrameProcessor):
         self._story = story
 
     async def process_frame(self, frame: Frame) -> AsyncGenerator[Frame, None]:
-        if isinstance(frame, StoryPromptFrame):
-            prompt = frame.text
-            async for f in self._fal_service.process_frame(TextFrame(prompt)):
-                yield f
+        if isinstance(frame, StoryPageFrame):
+            print("START IMAGE FLOW")
+            # prompt = frame.text
+            # async for f in self._fal_service.process_frame(TextFrame(prompt)):
+            #    yield f
         else:
             yield frame
 
@@ -124,12 +125,29 @@ async def main(room_url, token=None):
         async def storytime():
             await start_storytime_event.wait()
 
+            intro_pipeline = Pipeline(processors=[
+                llm_service,
+                story_processor,
+                tts_service,
+                llm_responses,
+            ], sink=transport.send_queue)
+
+            await intro_pipeline.queue_frames(
+                [
+                    LLMMessagesFrame(message_history),
+                    EndPipeFrame(),
+                ]
+            )
+
+            await intro_pipeline.run_pipeline()
+
+            print("BEEP")
+
             pipeline = Pipeline(processors=[
                 user_responses,
                 llm_service,
                 story_processor,
-                image_generator,
-                # fl,
+                # image_generator,
                 tts_service,
                 llm_responses
             ])
