@@ -96,7 +96,7 @@ def get_token(room_url: str) -> str:
         json={
             "properties": {
                 "room_name": room_name,
-                "is_owner": False,
+                "is_owner": True,  # Owner tokens required for transcription
                 "exp": expiration}},
     )
 

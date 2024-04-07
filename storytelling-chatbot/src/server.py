@@ -48,7 +48,7 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR,
 async def create_room(request: Request) -> JSONResponse:
     data = await request.json()
 
-    if "room_url" in data:
+    if data.get('room_url') is not None:
         room_url = data.get('room_url')
         room_name = get_name_from_url(room_url)
     else:
@@ -75,7 +75,7 @@ async def start_agent(request: Request) -> JSONResponse:
 
     # Check if there is already an existing process running in this room
     num_bots_in_room = sum(
-        1 for proc in bot_procs.values() if proc[1] == room_url)
+        1 for proc in bot_procs.values() if proc[1] == room_url and proc[0].poll() is None)
     if num_bots_in_room >= MAX_BOTS_PER_ROOM:
         raise HTTPException(
             status_code=500, detail=f"Max bot limited reach for room: {room_url}")

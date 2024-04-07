@@ -5,41 +5,69 @@ import os
 import argparse
 
 from dailyai.pipeline.pipeline import Pipeline
-from dailyai.pipeline.frames import TextFrame, LLMMessagesFrame
+from dailyai.pipeline.frames import TextFrame, EndPipeFrame, EndFrame, LLMMessagesFrame
+from dailyai.pipeline.aggregators import (
+    LLMAssistantContextAggregator,
+    LLMUserContextAggregator,
+    UserResponseAggregator,
+    LLMResponseAggregator,
+)
 from dailyai.transports.daily_transport import DailyTransport
-from dailyai.services.anthropic_llm_service import AnthropicLLMService
+# from dailyai.services.anthropic_llm_service import AnthropicLLMService
+from dailyai.services.elevenlabs_ai_service import ElevenLabsTTSService
+from dailyai.services.open_ai_services import OpenAILLMService
+from dailyai.services.ai_services import FrameLogger
 
 from services.fal import FalImageGenService
-# from dailyai.services.elevenlabs_ai_service import ElevenLabsTTSService
+from prompts import LLM_BASE_PROMPT, LLM_INTRO_PROMPT
+
 
 from dotenv import load_dotenv
 load_dotenv(override=True)
 
-logging.basicConfig(format=f"%(levelno)s %(asctime)s %(message)s")
+logging.basicConfig(format=f"[STORYBOY] %(levelno)s %(asctime)s %(message)s")
 logger = logging.getLogger("dailyai")
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 
 async def main(room_url, token=None):
     async with aiohttp.ClientSession() as session:
+
+        # -------------- Transport --------------- #
+
         transport = DailyTransport(
             room_url,
             token,
-            "Storyteller Bot",
+            "Storytelling Bot",
+            duration_minutes=5,
+            start_transcription=True,
             mic_enabled=True,
-            camera_enabled=True,
-            camera_width=768,
-            camera_height=768,
+            mic_sample_rate=16000,
+            vad_enabled=True,
+            # camera_framerate=30,
+            # camera_bitrate=680000,
+            # camera_enabled=True,
+            # camera_width=768,
+            # camera_height=768,
         )
 
-        """
-        tts = ElevenLabsTTSService(
+        logger.debug("Transport created for room:" + room_url)
+
+        # -------------- Services --------------- #
+
+        llm_service = OpenAILLMService(
+            api_key=os.getenv("OPENAI_API_KEY"),
+            model="gpt-4-turbo-preview"
+        )
+
+        tts_service = ElevenLabsTTSService(
             aiohttp_session=session,
             api_key=os.getenv("ELEVENLABS_API_KEY"),
             voice_id=os.getenv("ELEVENLABS_VOICE_ID"),
         )
+
         """
-        fal_params = FalImageGenService.InputParams(
+        fal_service_params = FalImageGenService.InputParams(
             image_size={
                 "width": 768,
                 "height": 768
@@ -47,32 +75,93 @@ async def main(room_url, token=None):
             expand_prompt=True,
         )
 
-        imagegen = FalImageGenService(
+        fal_service = FalImageGenService(
             aiohttp_session=session,
             model="fal-ai/fast-lightning-sdxl",
-            params=fal_params,
+            params=fal_service_params,
             key_id=os.getenv("FAL_KEY_ID"),
             key_secret=os.getenv("FAL_KEY_SECRET"),
         )
+        """
+        # --------------- Setup ----------------- #
 
-        pipeline = Pipeline(processors=[imagegen])
+        message_history = [LLM_INTRO_PROMPT]
+
+        # llm_responses = LLMResponseAggregator(messages)
+        # user_responses = UserResponseAggregator(messages)
+        user_context = LLMUserContextAggregator(
+            message_history, transport._my_participant_id)
+        llm_context = LLMAssistantContextAggregator(
+            message_history, transport._my_participant_id)
+
+        # Wait for participant join to kick off our story
+        # start_story_event = asyncio.Event()
+
+        fl = FrameLogger("Inner")
+        fl2 = FrameLogger("Outer")
+
+        pipeline = Pipeline(processors=[
+            fl,
+            # user_context,
+            llm_service,
+            fl2,
+            tts_service,
+            # llm_context
+        ])
+
+        logger.debug("Waiting for participant...")
 
         @transport.event_handler("on_first_other_participant_joined")
         async def on_first_other_participant_joined(transport):
-            # Note that we do not put an EndFrame() item in the pipeline for this demo.
-            # This means that the bot will stay in the channel until it times out.
-            # An EndFrame() in the pipeline would cause the transport to shut
-            # down.
-            await pipeline.queue_frames(
+            logger.debug("Participant joined, queuing pipeline")
+            await pipeline.queue_frames([LLMMessagesFrame(message_history)])
+
+        async def run_conversation():
+            await transport.run_pipeline(
+                pipeline,
+                post_processor=LLMResponseAggregator(message_history),
+                pre_processor=UserResponseAggregator(message_history),
+            )
+
+        transport.transcription_settings["extra"]["endpointing"] = True
+        transport.transcription_settings["extra"]["punctuate"] = True
+
+        await asyncio.gather(transport.run(), run_conversation())
+
+        logger.debug("Pipeline finished. Exiting.")
+
+        # ------------- Story Loop -------------- #
+        """
+        @transport.event_handler("on_first_other_participant_joined")
+        async def on_first_other_participant_joined(transport):
+            print("B")
+            start_story_event.set()
+
+        async def storytime():
+            await start_story_event.wait()
+
+            llm_context = LLMAssistantContextAggregator(messages)
+
+            story_teller_pipeline = Pipeline([
+                llm_service,
+                llm_context,
+            ], sink=transport.send_queue)
+
+            await story_teller_pipeline.queue_frames(
                 [
-                    TextFrame("a doggo"),
-                    TextFrame("some chocolate"),
-                    TextFrame("a tiny frog"),
-                    TextFrame("a cat in the style of picasso")
+                    LLMMessagesFrame(LLM_INTRO_PROMPT),
+                    EndPipeFrame(),
                 ]
             )
 
-        await transport.run(pipeline)
+            await story_teller_pipeline.run_pipeline()
+
+            try:
+                await asyncio.gather(transport.run(), storytime())
+            except (asyncio.CancelledError, KeyboardInterrupt):
+                print("whoops")
+                transport.stop()
+        """
 
 
 if __name__ == "__main__":

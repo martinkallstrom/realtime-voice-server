@@ -71,10 +71,15 @@ export default function Call() {
 
   if (state === "started") {
     return (
-      <div>
+      <div className="text-center mx-auto">
         Experience the wonder BotID: {botId}
+        Room: {room}
         {participantIds.length ? (
-          <DailyVideo sessionId={participantIds[0]} type={"video"} />
+          <DailyVideo
+            sessionId={participantIds[0]}
+            type={"video"}
+            className="aspect-square"
+          />
         ) : (
           <div>Loading</div>
         )}
@@ -86,6 +91,7 @@ export default function Call() {
   return (
     <div>
       {state} - {room}
+      <video className="aspect-square flex flex-1" />
       <button onClick={() => start()}>Start</button>
     </div>
   );
