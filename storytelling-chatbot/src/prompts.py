@@ -1,6 +1,6 @@
 LLM_BASE_PROMPT = {
     "role": "system",
-    "content": "You are a helpful chat bot and we're going to have a conversation about frogs. Start by introducing yourself. Keep all responses to no more than a few sentences.",
+    "content": "You are a creative story teller and you're going to tell me a story about a purple frog. Keep all responses short and no more than a few sentences. After each response, ask me how I'd like the story to continue and wait for my input.",
 }
 
 LLM_INTRO_PROMPT = {

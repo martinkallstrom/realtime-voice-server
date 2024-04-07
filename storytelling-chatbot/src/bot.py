@@ -8,8 +8,6 @@ from typing import AsyncGenerator
 from dailyai.pipeline.pipeline import Pipeline
 from dailyai.pipeline.frames import TextFrame, Frame, LLMMessagesFrame
 from dailyai.pipeline.aggregators import (
-    LLMAssistantContextAggregator,
-    LLMUserContextAggregator,
     UserResponseAggregator,
     LLMResponseAggregator,
 )
@@ -21,6 +19,7 @@ from dailyai.services.open_ai_services import OpenAILLMService
 from dailyai.services.ai_services import FrameLogger
 
 from services.fal import FalImageGenService
+from processor import StoryProcessor, StoryPromptFrame
 from prompts import LLM_BASE_PROMPT, LLM_INTRO_PROMPT
 
 
@@ -33,13 +32,16 @@ logger.setLevel(logging.INFO)
 
 
 class StoryImageGenerator(FrameProcessor):
-    def __init__(self, llm, img):
+    def __init__(self, story, llm, fal_service):
         self._llm = llm
-        self._img = img
+        self._fal_service = fal_service
+        self._story = story
 
     async def process_frame(self, frame: Frame) -> AsyncGenerator[Frame, None]:
-        if isinstance(frame, TextFrame):
-            yield frame
+        if isinstance(frame, StoryPromptFrame):
+            prompt = frame.text
+            async for f in self._fal_service.process_frame(TextFrame(prompt)):
+                yield f
         else:
             yield frame
 
@@ -58,11 +60,11 @@ async def main(room_url, token=None):
             mic_enabled=True,
             mic_sample_rate=16000,
             vad_enabled=True,
-            # camera_framerate=30,
-            # camera_bitrate=680000,
-            # camera_enabled=True,
-            # camera_width=768,
-            # camera_height=768,
+            camera_framerate=30,
+            camera_bitrate=680000,
+            camera_enabled=True,
+            camera_width=768,
+            camera_height=768,
         )
 
         logger.debug("Transport created for room:" + room_url)
@@ -96,47 +98,54 @@ async def main(room_url, token=None):
             key_secret=os.getenv("FAL_KEY_SECRET"),
         )
         # --------------- Setup ----------------- #
-
-        image_generator = StoryImageGenerator(llm_service, fal_service)
         message_history = [LLM_BASE_PROMPT]
+        story_pages = []
+
+        image_generator = StoryImageGenerator(
+            story_pages, llm_service, fal_service)
+        story_processor = StoryProcessor(message_history, story_pages)
 
         llm_responses = LLMResponseAggregator(message_history)
         user_responses = UserResponseAggregator(message_history)
 
-        # Wait for participant join to kick off our story
-        # start_story_event = asyncio.Event()
-
-        fl = FrameLogger("### After Image Generation")
-
-        pipeline = Pipeline(processors=[
-            user_responses,
-            # user_context,
-            llm_service,
-            image_generator,
-            fl,
-            tts_service,
-            llm_responses
-            # llm_context
-        ])
+        # fl = FrameLogger("### After Image Generation")
 
         logger.debug("Waiting for participant...")
 
+        # ------------- Story Loop -------------- #
+
+        start_storytime_event = asyncio.Event()
+
         @transport.event_handler("on_first_other_participant_joined")
         async def on_first_other_participant_joined(transport):
-            logger.debug("Participant joined, queuing pipeline")
-            await pipeline.queue_frames([LLMMessagesFrame(message_history)])
+            logger.debug("Participant joined, storytime commence!")
+            start_storytime_event.set()
 
-        async def run_conversation():
+        async def storytime():
+            await start_storytime_event.wait()
+
+            pipeline = Pipeline(processors=[
+                user_responses,
+                llm_service,
+                story_processor,
+                image_generator,
+                # fl,
+                tts_service,
+                llm_responses
+            ])
+
             await transport.run_pipeline(pipeline)
 
         transport.transcription_settings["extra"]["endpointing"] = True
         transport.transcription_settings["extra"]["punctuate"] = True
 
-        await asyncio.gather(transport.run(), run_conversation())
+        try:
+            await asyncio.gather(transport.run(), storytime())
+        except (asyncio.CancelledError, KeyboardInterrupt):
+            transport.stop()
 
         logger.debug("Pipeline finished. Exiting.")
 
-        # ------------- Story Loop -------------- #
         """
         @transport.event_handler("on_first_other_participant_joined")
         async def on_first_other_participant_joined(transport):
