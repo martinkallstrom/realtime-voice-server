@@ -9,8 +9,6 @@ from dailyai.pipeline.frames import (
     TextFrame,
     LLMResponseEndFrame,
     LLMResponseStartFrame,
-    AudioFrame,
-    ImageFrame,
     UserStoppedSpeakingFrame,
 )
 
@@ -35,6 +33,31 @@ class StoryPageFrame(TextFrame):
 
 class StoryPromptFrame(TextFrame):
     pass
+
+
+class StoryImageProcessor(FrameProcessor):
+    """
+    Processor for image prompt frames that will be sent to the FAL service.
+
+    This processor is responsible for handling frames of type `StoryImagePromptFrame`.
+    It processes the frame by printing the prompt and then passing it to the FAL service
+    for further processing. The processed frames are then yielded back.
+
+    Attributes:
+        _fal_service (FALService): The FAL service used for processing frames.
+
+    """
+
+    def __init__(self, fal_service):
+        self._fal_service = fal_service
+
+    async def process_frame(self, frame: Frame) -> AsyncGenerator[Frame, None]:
+        if isinstance(frame, StoryImagePromptFrame):
+            print("Prompt:", frame)
+            async for f in self._fal_service.process_frame(TextFrame(frame.text)):
+                yield f
+        else:
+            yield frame
 
 
 class StoryProcessor(FrameProcessor):

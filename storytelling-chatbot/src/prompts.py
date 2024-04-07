@@ -8,9 +8,4 @@ LLM_BASE_PROMPT = {
         Please refrain from using any explicit language or content. Let's begin!",
 }
 
-LLM_INTRO_PROMPT = {
-    "role": "system",
-    "content": "Begin by asking what the user wants you to tell a story about. Keep your response to only a few sentences.",
-}
-
 IMAGE_GEN_PROMPT = ""

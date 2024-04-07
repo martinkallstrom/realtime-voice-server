@@ -6,21 +6,19 @@ import argparse
 from typing import AsyncGenerator
 
 from dailyai.pipeline.pipeline import Pipeline
-from dailyai.pipeline.frames import EndPipeFrame, Frame, TextFrame, LLMMessagesFrame
+from dailyai.pipeline.frames import EndPipeFrame, LLMMessagesFrame
 from dailyai.pipeline.aggregators import (
     UserResponseAggregator,
     LLMResponseAggregator,
 )
 from dailyai.transports.daily_transport import DailyTransport
-from dailyai.pipeline.frame_processor import FrameProcessor
-# from dailyai.services.anthropic_llm_service import AnthropicLLMService
 from dailyai.services.elevenlabs_ai_service import ElevenLabsTTSService
 from dailyai.services.open_ai_services import OpenAILLMService
 from dailyai.services.ai_services import FrameLogger
 
 from services.fal import FalImageGenService
-from processor import StoryProcessor, StoryPageFrame, StoryImagePromptFrame
-from prompts import LLM_BASE_PROMPT, LLM_INTRO_PROMPT
+from processors import StoryProcessor, StoryImageProcessor
+from prompts import LLM_BASE_PROMPT
 
 
 from dotenv import load_dotenv
@@ -29,32 +27,6 @@ load_dotenv(override=True)
 logging.basicConfig(format=f"[STORYBOY] %(levelno)s %(asctime)s %(message)s")
 logger = logging.getLogger("dailyai")
 logger.setLevel(logging.INFO)
-
-
-class StoryImageGenerator(FrameProcessor):
-    def __init__(self, story, llm, fal_service):
-        self._llm = llm
-        self._fal_service = fal_service
-        self._prompt_buffer = []
-        self._story = story
-
-    async def process_frame(self, frame: Frame) -> AsyncGenerator[Frame, None]:
-        if isinstance(frame, StoryImagePromptFrame):
-            print("Prompt:", frame)
-            async for f in self._fal_service.process_frame(TextFrame(frame.text)):
-                yield f
-        else:
-            yield frame
-        """
-        elif isinstance(frame, StoryPageFrame):
-            if len(self._prompt_buffer):
-                prompt = self._prompt_buffer.pop(0)
-                print("Prompt:", prompt)
-            yield frame
-            # prompt = frame.text
-            # async for f in self._fal_service.process_frame(TextFrame(prompt)):
-            #    yield f
-        """
 
 
 async def main(room_url, token=None):
@@ -108,22 +80,25 @@ async def main(room_url, token=None):
             key_id=os.getenv("FAL_KEY_ID"),
             key_secret=os.getenv("FAL_KEY_SECRET"),
         )
+
         # --------------- Setup ----------------- #
+
         message_history = [LLM_BASE_PROMPT]
         story_pages = []
 
-        image_generator = StoryImageGenerator(
-            story_pages, llm_service, fal_service)
-        story_processor = StoryProcessor(message_history, story_pages)
+        # We need aggregators to keep track of user and LLM responses
 
         llm_responses = LLMResponseAggregator(message_history)
         user_responses = UserResponseAggregator(message_history)
 
-        # fl = FrameLogger("### After Image Generation")
+        # -------------- Processors ------------- #
+
+        image_processor = StoryImageProcessor(fal_service)
+        story_processor = StoryProcessor(message_history, story_pages)
+
+        # -------------- Story Loop ------------- #
 
         logger.debug("Waiting for participant...")
-
-        # ------------- Story Loop -------------- #
 
         start_storytime_event = asyncio.Event()
 
@@ -132,13 +107,17 @@ async def main(room_url, token=None):
             logger.debug("Participant joined, storytime commence!")
             start_storytime_event.set()
 
+        # The storytime coroutine will wait for the start_storytime_event
+        # to be set before starting the storytime pipeline
         async def storytime():
             await start_storytime_event.wait()
 
+            # The intro pipeline is used to introduce start
+            # the story (as per LLM_BASE_PROMPT)
             intro_pipeline = Pipeline(processors=[
                 llm_service,
                 story_processor,
-                image_generator,
+                image_processor,
                 tts_service,
                 llm_responses,
             ], sink=transport.send_queue)
@@ -150,13 +129,16 @@ async def main(room_url, token=None):
                 ]
             )
 
+            # We start the pipeline as soon as the user joins
             await intro_pipeline.run_pipeline()
 
+            # The main story pipeline is used to continue the
+            # story based on user input
             pipeline = Pipeline(processors=[
                 user_responses,
                 llm_service,
                 story_processor,
-                image_generator,
+                image_processor,
                 tts_service,
                 llm_responses
             ])
@@ -172,38 +154,6 @@ async def main(room_url, token=None):
             transport.stop()
 
         logger.debug("Pipeline finished. Exiting.")
-
-        """
-        @transport.event_handler("on_first_other_participant_joined")
-        async def on_first_other_participant_joined(transport):
-            print("B")
-            start_story_event.set()
-
-        async def storytime():
-            await start_story_event.wait()
-
-            llm_context = LLMAssistantContextAggregator(messages)
-
-            story_teller_pipeline = Pipeline([
-                llm_service,
-                llm_context,
-            ], sink=transport.send_queue)
-
-            await story_teller_pipeline.queue_frames(
-                [
-                    LLMMessagesFrame(LLM_INTRO_PROMPT),
-                    EndPipeFrame(),
-                ]
-            )
-
-            await story_teller_pipeline.run_pipeline()
-
-            try:
-                await asyncio.gather(transport.run(), storytime())
-            except (asyncio.CancelledError, KeyboardInterrupt):
-                print("whoops")
-                transport.stop()
-        """
 
 
 if __name__ == "__main__":
