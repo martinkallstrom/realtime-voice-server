@@ -19,6 +19,16 @@ class StoryStartFrame(TextFrame):
     pass
 
 
+class StoryImagePromptFrame(TextFrame):
+    @property
+    def text(self):
+        return f"Illustrative art of {self._text}. In the style of Studio Ghibli."
+
+    @text.setter
+    def text(self, value):
+        self._text = value
+
+
 class StoryPageFrame(TextFrame):
     pass
 
@@ -43,6 +53,7 @@ class StoryProcessor(FrameProcessor):
     def __init__(self, messages, story):
         self._messages = messages
         self._text = ""
+        self._image_prompt = None
         self._story = story
 
     async def process_frame(self, frame: Frame) -> AsyncGenerator[Frame, None]:
@@ -56,10 +67,21 @@ class StoryProcessor(FrameProcessor):
             # we need to keep a buffer of the text we've seen so far
             self._text += frame.text
 
-            # Looking for: [break] in the LLM response
+            # 1. Looking for < image prompts > in the LLM response
+            if re.search("<", self._text):
+                # Extract the prompt from the text
+                if re.search(">", self._text):
+                    # Extract the prompt from the text
+                    self._image_prompt = re.search(
+                        r'<([^>]*)>', self._text).group(1)  # type: ignore
+                    # Remove the prompt from the text
+                    self._text = re.sub(r'<([^>]*)>', '', self._text)
+                    # yield StoryImagePromptFrame(prompt)
+
+            # 2. Looking for: [break] in the LLM response
             # We prompted our LLM to add a [break] after each sentence
             # so we use regex matching to find it in the LLM response
-            if re.findall(r".*\[[bB]reak\].*", self._text):
+            if re.search(r".*\[[bB]reak\].*", self._text):
                 # Remove the [break] token from the text
                 # so it isn't spoken out loud by the TTS
                 self._text = re.sub(r'\[[bB]reak\]', '',
@@ -68,9 +90,13 @@ class StoryProcessor(FrameProcessor):
                 if len(self._text) > 2:
                     # Append the sentence to the story
                     self._story.append(self._text)
+                    if self._image_prompt:
+                        yield StoryImagePromptFrame(self._image_prompt)
                     yield StoryPageFrame(self._text)
+
                 # Clear the buffer
                 self._text = ""
+                self._image_prompt = None
 
         # End of LLM response
         elif isinstance(frame, LLMResponseEndFrame):

@@ -6,7 +6,7 @@ import argparse
 from typing import AsyncGenerator
 
 from dailyai.pipeline.pipeline import Pipeline
-from dailyai.pipeline.frames import EndPipeFrame, Frame, LLMMessagesFrame
+from dailyai.pipeline.frames import EndPipeFrame, Frame, TextFrame, LLMMessagesFrame
 from dailyai.pipeline.aggregators import (
     UserResponseAggregator,
     LLMResponseAggregator,
@@ -19,7 +19,7 @@ from dailyai.services.open_ai_services import OpenAILLMService
 from dailyai.services.ai_services import FrameLogger
 
 from services.fal import FalImageGenService
-from processor import StoryProcessor, StoryPageFrame
+from processor import StoryProcessor, StoryPageFrame, StoryImagePromptFrame
 from prompts import LLM_BASE_PROMPT, LLM_INTRO_PROMPT
 
 
@@ -35,16 +35,26 @@ class StoryImageGenerator(FrameProcessor):
     def __init__(self, story, llm, fal_service):
         self._llm = llm
         self._fal_service = fal_service
+        self._prompt_buffer = []
         self._story = story
 
     async def process_frame(self, frame: Frame) -> AsyncGenerator[Frame, None]:
-        if isinstance(frame, StoryPageFrame):
-            print("START IMAGE FLOW")
+        if isinstance(frame, StoryImagePromptFrame):
+            print("Prompt:", frame)
+            async for f in self._fal_service.process_frame(TextFrame(frame.text)):
+                yield f
+        else:
+            yield frame
+        """
+        elif isinstance(frame, StoryPageFrame):
+            if len(self._prompt_buffer):
+                prompt = self._prompt_buffer.pop(0)
+                print("Prompt:", prompt)
+            yield frame
             # prompt = frame.text
             # async for f in self._fal_service.process_frame(TextFrame(prompt)):
             #    yield f
-        else:
-            yield frame
+        """
 
 
 async def main(room_url, token=None):
@@ -128,6 +138,7 @@ async def main(room_url, token=None):
             intro_pipeline = Pipeline(processors=[
                 llm_service,
                 story_processor,
+                image_generator,
                 tts_service,
                 llm_responses,
             ], sink=transport.send_queue)
@@ -141,13 +152,11 @@ async def main(room_url, token=None):
 
             await intro_pipeline.run_pipeline()
 
-            print("BEEP")
-
             pipeline = Pipeline(processors=[
                 user_responses,
                 llm_service,
                 story_processor,
-                # image_generator,
+                image_generator,
                 tts_service,
                 llm_responses
             ])
