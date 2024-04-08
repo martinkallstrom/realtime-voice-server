@@ -11,6 +11,7 @@
   "dependencies": {
     "@daily-co/daily-js": "^0.62.0",
     "@daily-co/daily-react": "^0.18.0",
+    "clsx": "^2.1.0",
     "next": "14.1.4",
     "react": "^18",
     "react-dom": "^18",

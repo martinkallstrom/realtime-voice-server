@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 
 import { useDaily } from "@daily-co/daily-react";
-import { DailyVideo, useParticipantIds } from "@daily-co/daily-react";
+import { useParticipantIds, DailyAudio } from "@daily-co/daily-react";
+import VideoTile from "./VideoTile";
+import DeviceManager from "./DevicePicker";
 
 type State =
   | "idle"
@@ -37,7 +39,12 @@ export default function Call() {
 
       setRoom(room_url);
 
-      await daily?.join({ url: room_url, token, videoSource: false });
+      await daily?.join({
+        url: room_url,
+        token,
+        videoSource: false,
+        startAudioOff: true,
+      });
 
       setState("connected");
 
@@ -72,17 +79,15 @@ export default function Call() {
   if (state === "started") {
     return (
       <div className="text-center mx-auto">
+        <DeviceManager />
         Experience the wonder BotID: {botId}
         Room: {room}
         {participantIds.length ? (
-          <DailyVideo
-            sessionId={participantIds[0]}
-            type={"video"}
-            className="aspect-square"
-          />
+          <VideoTile sessionId={participantIds[0]} />
         ) : (
           <div>Loading</div>
         )}
+        <DailyAudio />
         <button onClick={() => leave()}>Leave</button>
       </div>
     );
@@ -91,7 +96,6 @@ export default function Call() {
   return (
     <div>
       {state} - {room}
-      <video className="aspect-square flex flex-1" />
       <button onClick={() => start()}>Start</button>
     </div>
   );

@@ -3,6 +3,7 @@ import re
 
 from click import prompt
 from dailyai.pipeline.frames import TextFrame, Frame
+from dailyai.services.ai_services import FrameLogger
 from dailyai.pipeline.frame_processor import FrameProcessor
 from dailyai.pipeline.frames import (
     Frame,
@@ -14,35 +15,35 @@ from dailyai.pipeline.frames import (
 
 # -------------- Frame Types ------------- #
 
-# Frame for when the story begins
-
 
 class StoryStartFrame(TextFrame):
+    # Frame for when the story begins
     pass
 
 
-# Frame for image prompt at the start of each sentence
 class StoryImagePromptFrame(TextFrame):
-    @property
-    def text(self):
-        return f"Illustrative art of {self._text}. In the style of Studio Ghibli."
-
-    @text.setter
-    def text(self, value):
-        self._text = value
-
-
-# Frame for each sentence in the story before a [break]
-class StoryPageFrame(TextFrame):
+    # Frame for image prompt at the start of each sentence
     pass
 
 
-# Frame for prompting the user to continue the story
+class StoryPageFrame(TextFrame):
+    # Frame for each sentence in the story before a [break]
+    pass
+
+
 class StoryPromptFrame(TextFrame):
+    # Frame for prompting the user to continue the story
     pass
 
 
 # ------------ Frame Processors ----------- #
+
+class ImagePromptLogger(FrameLogger):
+    async def process_frame(self, frame: Frame) -> AsyncGenerator[Frame, None]:
+        if isinstance(frame, StoryImagePromptFrame):
+            self.logger.info(f"[IMAGE PROMPT]: {frame.text}")
+        yield frame
+
 
 class StoryImageProcessor(FrameProcessor):
     """
@@ -57,13 +58,13 @@ class StoryImageProcessor(FrameProcessor):
 
     """
 
-    def __init__(self, fal_service):
+    def __init__(self, fal_service, base_image_prompt):
         self._fal_service = fal_service
+        self._prompt = base_image_prompt
 
     async def process_frame(self, frame: Frame) -> AsyncGenerator[Frame, None]:
         if isinstance(frame, StoryImagePromptFrame):
-            print("Prompt:", frame)
-            async for f in self._fal_service.process_frame(TextFrame(frame.text)):
+            async for f in self._fal_service.process_frame(TextFrame(self._prompt % frame.text)):
                 yield f
         else:
             yield frame
@@ -108,7 +109,6 @@ class StoryProcessor(FrameProcessor):
                         r'<([^>]*)>', self._text).group(1)  # type: ignore
                     # Remove the prompt from the text
                     self._text = re.sub(r'<([^>]*)>', '', self._text)
-                    # yield StoryImagePromptFrame(prompt)
 
             # 2. Looking for: [break] in the LLM response
             # We prompted our LLM to add a [break] after each sentence

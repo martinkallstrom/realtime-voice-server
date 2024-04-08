@@ -13,17 +13,16 @@ from dailyai.pipeline.aggregators import (
 from dailyai.transports.daily_transport import DailyTransport
 from dailyai.services.elevenlabs_ai_service import ElevenLabsTTSService
 from dailyai.services.open_ai_services import OpenAILLMService
-from dailyai.services.ai_services import FrameLogger
 
 from services.fal import FalImageGenService
-from processors import StoryProcessor, StoryImageProcessor
-from prompts import LLM_BASE_PROMPT
+from processors import StoryProcessor, StoryImageProcessor, ImagePromptLogger
+from prompts import IMAGE_GEN_PROMPT, LLM_BASE_PROMPT
 
 
 from dotenv import load_dotenv
 load_dotenv(override=True)
 
-logging.basicConfig(format=f"[STORYBOY] %(levelno)s %(asctime)s %(message)s")
+logging.basicConfig(format=f"[STORYBOT] %(levelno)s %(asctime)s %(message)s")
 logger = logging.getLogger("dailyai")
 logger.setLevel(logging.INFO)
 
@@ -92,7 +91,8 @@ async def main(room_url, token=None):
 
         # -------------- Processors ------------- #
 
-        image_processor = StoryImageProcessor(fal_service)
+        image_processor = StoryImageProcessor(fal_service, IMAGE_GEN_PROMPT)
+        image_prompt_logger = ImagePromptLogger()
         story_processor = StoryProcessor(message_history, story_pages)
 
         # -------------- Story Loop ------------- #
@@ -111,11 +111,12 @@ async def main(room_url, token=None):
         async def storytime():
             await start_storytime_event.wait()
 
-            # The intro pipeline is used to introduce start
+            # The intro pipeline is used to start
             # the story (as per LLM_BASE_PROMPT)
             intro_pipeline = Pipeline(processors=[
                 llm_service,
                 story_processor,
+                image_prompt_logger,
                 image_processor,
                 tts_service,
                 llm_responses,
@@ -137,9 +138,10 @@ async def main(room_url, token=None):
                 user_responses,
                 llm_service,
                 story_processor,
+                image_prompt_logger,
                 image_processor,
                 tts_service,
-                llm_responses
+                llm_responses,
             ])
 
             await transport.run_pipeline(pipeline)
