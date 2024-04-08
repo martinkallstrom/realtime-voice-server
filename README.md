@@ -26,9 +26,7 @@ Next, follow the steps in the README for each demo.
 
 Note: make sure you `pip install -r requirements.txt` for each demo project, so you can be sure to have the necessary service dependencies that extend the functionality of Daily AI. You can read more about the framework architecture [here](https://github.com/daily-co/dailyai?tab=readme-ov-file#getting-started).
 
-
 ---
-
 
 ## Demos:
 
@@ -91,26 +89,23 @@ By default the Daily AI framework uses a CPU-bound version of VAD (voice activit
 
 ...
 
-
 ---
-
 
 ## What is Daily, do I need it to run my bots?
 
 ...
 
-
 ### What is Daily Prebuilt?
 
-To get up and running with your bots quickly, you can make use of Daily's hosted user interface for real-time video and audio calls. Daily Prebuilt will allow you to join any room on your domain via a URL, for example: `https://[your-domains].daily.co/[room_name]`. 
+To get up and running with your bots quickly, you can make use of Daily's hosted user interface for real-time video and audio calls. Daily Prebuilt will allow you to join any room on your domain via a URL, for example: `https://[your-domains].daily.co/[room_name]`.
 
 Daily Prebuilt has been designed as a fully-featured video calling experience, and whilst it may not fit every bot use-case, it can definitely serve as a helpful debugging tool or method for avoiding building your own frontend.
 
-
 ---
 
-
 ## Deployment
+
+`docker run -p 7860:7860 --env-file ./.env user/app:tag`
 
 For each of these demos we've included a `Dockerfile`. Out of the box, this should provide everything needed to get the respective demo running on a VM.
 
@@ -122,9 +117,7 @@ Of course, these demos attempt to keep things simple and are unopinionated regar
 
 Creating virualized worker pools and on-demand instances is out of scope for these examples, but we have shared various implementation ideas here.
 
-
 ---
-
 
 ## Getting help
 

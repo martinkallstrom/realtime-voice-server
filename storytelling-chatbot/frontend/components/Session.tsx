@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { useDaily } from "@daily-co/daily-react";
 import { useParticipantIds, DailyAudio } from "@daily-co/daily-react";
 import VideoTile from "./VideoTile";
-import DeviceManager from "./DevicePicker";
 
 type State =
   | "idle"
@@ -79,7 +78,6 @@ export default function Call() {
   if (state === "started") {
     return (
       <div className="text-center mx-auto">
-        <DeviceManager />
         Experience the wonder BotID: {botId}
         Room: {room}
         {participantIds.length ? (

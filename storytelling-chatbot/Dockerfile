@@ -1,4 +1,4 @@
-FROM ubuntu22.04
+FROM python:3.10-bullseye
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG USE_PERSISTENT_DATA
@@ -9,19 +9,16 @@ ENV NODE_MAJOR=20
 ENV FAST_API_PORT=7860
 EXPOSE 7860
 
+# Install system dependencies
 RUN apt-get update && apt-get install --no-install-recommends -y \
     build-essential \
-    python3.10 \
-    python3-pip \
-    python3-dev \
     git \
     ffmpeg \
     google-perftools \
     ca-certificates curl gnupg \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /code
-
+# Install Node.js
 RUN mkdir -p /etc/apt/keyrings 
 RUN curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
 RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_${NODE_MAJOR}.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list > /dev/null
@@ -37,24 +34,23 @@ ENV HOME=/home/user \
     PYTHONPATH=$HOME/app \
     PYTHONUNBUFFERED=1
 
-# Install Python dependencies
-COPY ./requirements.txt /code/requirements.txt
-RUN pip3 install --no-cache-dir --upgrade -r /code/requirements.txt
-
 # Set the working directory to the user's home directory
 WORKDIR $HOME/app
 
-# Copy package.json and package-lock.json
-COPY --chown=user frontend/package*.json frontend/
-RUN cd frontend && npm install
-
-# Copy frontend app and build
-COPY --chown=user frontend/ frontend/
-RUN cd frontend && npm run build
+# Install Python dependencies
+COPY ./requirements.txt requirements.txt
+RUN pip3 install --no-cache-dir --upgrade -r requirements.txt
 
 # Copy everything else
-COPY --chown=user src/ src/
+COPY --chown=user ./src/ src/
 
-ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libtcmalloc.so.4
+# Copy frontend app and build
+COPY --chown=user ./frontend/ frontend/
+RUN cd frontend && npm install && npm run build
 
-CMD ["python3", "src/server.py", "--port", "$FAST_API_PORT"]
+# Start the FastAPI server
+CMD python3 src/server.py --port ${FAST_API_PORT}
+
+# COPY --chown=user ./build-run.sh build-run.sh
+# RUN chmod +x ./build-run.sh
+# CMD ./build-run.sh
