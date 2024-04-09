@@ -15,8 +15,9 @@ from dailyai.services.elevenlabs_ai_service import ElevenLabsTTSService
 from dailyai.services.open_ai_services import OpenAILLMService
 
 from services.fal import FalImageGenService
-from processors import StoryProcessor, StoryImageProcessor, ImagePromptLogger
-from prompts import IMAGE_GEN_PROMPT, LLM_BASE_PROMPT
+from services.groq import GroqLLMService
+from processors import StoryProcessor, StoryImageProcessor
+from prompts import IMAGE_GEN_PROMPT, LLM_BASE_PROMPT, LLM_IMAGE_PROMPT
 
 
 from dotenv import load_dotenv
@@ -79,6 +80,11 @@ async def main(room_url, token=None):
             key_secret=os.getenv("FAL_KEY_SECRET"),
         )
 
+        groq_service = GroqLLMService(
+            api_key=os.getenv("GROQ_API_KEY"),
+            model="mixtral-8x7b-32768"
+        )
+
         # --------------- Setup ----------------- #
 
         message_history = [LLM_BASE_PROMPT]
@@ -91,9 +97,10 @@ async def main(room_url, token=None):
 
         # -------------- Processors ------------- #
 
-        image_processor = StoryImageProcessor(fal_service, IMAGE_GEN_PROMPT)
-        image_prompt_logger = ImagePromptLogger()
         story_processor = StoryProcessor(message_history, story_pages)
+        image_processor = StoryImageProcessor(
+            groq_service, fal_service, story_pages)
+        # image_prompt_logger = ImagePromptLogger()
 
         # -------------- Story Loop ------------- #
 
@@ -116,8 +123,8 @@ async def main(room_url, token=None):
             intro_pipeline = Pipeline(processors=[
                 llm_service,
                 story_processor,
-                image_prompt_logger,
                 image_processor,
+                # image_prompt_logger,
                 tts_service,
                 llm_responses,
             ], sink=transport.send_queue)
@@ -138,7 +145,7 @@ async def main(room_url, token=None):
                 user_responses,
                 llm_service,
                 story_processor,
-                image_prompt_logger,
+                # image_prompt_logger,
                 image_processor,
                 tts_service,
                 llm_responses,

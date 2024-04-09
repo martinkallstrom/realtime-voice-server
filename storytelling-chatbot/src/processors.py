@@ -1,7 +1,6 @@
 from typing import AsyncGenerator
 import re
 
-from click import prompt
 from dailyai.pipeline.frames import TextFrame, Frame
 from dailyai.services.ai_services import FrameLogger
 from dailyai.pipeline.frame_processor import FrameProcessor
@@ -13,16 +12,13 @@ from dailyai.pipeline.frames import (
     UserStoppedSpeakingFrame,
 )
 
+from prompts import LLM_IMAGE_PROMPT, IMAGE_GEN_PROMPT
+
 # -------------- Frame Types ------------- #
 
 
 class StoryStartFrame(TextFrame):
     # Frame for when the story begins
-    pass
-
-
-class StoryImagePromptFrame(TextFrame):
-    # Frame for image prompt at the start of each sentence
     pass
 
 
@@ -38,11 +34,13 @@ class StoryPromptFrame(TextFrame):
 
 # ------------ Frame Processors ----------- #
 
+"""
 class ImagePromptLogger(FrameLogger):
     async def process_frame(self, frame: Frame) -> AsyncGenerator[Frame, None]:
         if isinstance(frame, StoryImagePromptFrame):
             self.logger.info(f"[IMAGE PROMPT]: {frame.text}")
         yield frame
+"""
 
 
 class StoryImageProcessor(FrameProcessor):
@@ -58,14 +56,27 @@ class StoryImageProcessor(FrameProcessor):
 
     """
 
-    def __init__(self, fal_service, base_image_prompt):
+    def __init__(self, groq_service, fal_service, story_pages):
+        self._groq_service = groq_service
         self._fal_service = fal_service
-        self._prompt = base_image_prompt
+        self._story = story_pages
 
     async def process_frame(self, frame: Frame) -> AsyncGenerator[Frame, None]:
-        if isinstance(frame, StoryImagePromptFrame):
-            async for f in self._fal_service.process_frame(TextFrame(self._prompt % frame.text)):
-                yield f
+        if isinstance(frame, StoryPageFrame):
+            async for f in self._groq_service.run_llm_async([
+                LLM_IMAGE_PROMPT,
+                {
+                    "role": "user",
+                    "content": "".join(self._story)
+                },
+                {
+                    "role": "user",
+                    "content": self._story[-1]
+                }
+            ]):
+                async for i in self._fal_service.process_frame(TextFrame(IMAGE_GEN_PROMPT % f)):
+                    yield i
+            yield frame
         else:
             yield frame
 
@@ -86,7 +97,7 @@ class StoryProcessor(FrameProcessor):
     def __init__(self, messages, story):
         self._messages = messages
         self._text = ""
-        self._image_prompt = None
+        # self._image_prompt = None
         self._story = story
 
     async def process_frame(self, frame: Frame) -> AsyncGenerator[Frame, None]:
@@ -100,6 +111,7 @@ class StoryProcessor(FrameProcessor):
             # we need to keep a buffer of the text we've seen so far
             self._text += frame.text
 
+            """
             # 1. Looking for < image prompts > in the LLM response
             if re.search("<", self._text):
                 # Extract the prompt from the text
@@ -109,8 +121,9 @@ class StoryProcessor(FrameProcessor):
                         r'<([^>]*)>', self._text).group(1)  # type: ignore
                     # Remove the prompt from the text
                     self._text = re.sub(r'<([^>]*)>', '', self._text)
+            """
 
-            # 2. Looking for: [break] in the LLM response
+            # Looking for: [break] in the LLM response
             # We prompted our LLM to add a [break] after each sentence
             # so we use regex matching to find it in the LLM response
             if re.search(r".*\[[bB]reak\].*", self._text):
@@ -122,13 +135,13 @@ class StoryProcessor(FrameProcessor):
                 if len(self._text) > 2:
                     # Append the sentence to the story
                     self._story.append(self._text)
-                    if self._image_prompt:
-                        yield StoryImagePromptFrame(self._image_prompt)
+                    # if self._image_prompt:
+                    #    yield StoryImagePromptFrame(self._image_prompt)
                     yield StoryPageFrame(self._text)
 
                 # Clear the buffer
                 self._text = ""
-                self._image_prompt = None
+                # self._image_prompt = None
 
         # End of LLM response
         elif isinstance(frame, LLMResponseEndFrame):

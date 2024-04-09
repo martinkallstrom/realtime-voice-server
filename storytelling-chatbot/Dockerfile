@@ -1,4 +1,4 @@
-FROM python:3.10-bullseye
+FROM ubuntu:22.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG USE_PERSISTENT_DATA
@@ -50,7 +50,3 @@ RUN cd frontend && npm install && npm run build
 
 # Start the FastAPI server
 CMD python3 src/server.py --port ${FAST_API_PORT}
-
-# COPY --chown=user ./build-run.sh build-run.sh
-# RUN chmod +x ./build-run.sh
-# CMD ./build-run.sh

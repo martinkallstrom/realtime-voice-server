@@ -75,3 +75,5 @@ If you'd like to run a custom domain or port:
 ## Deploying
 
 ...
+
+`docker run -p 7860:7860 --env-file ./.env username/repo:tag`
