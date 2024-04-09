@@ -25,6 +25,7 @@ class FalImageGenService(ImageGenService):
         image_size: Union[str, Dict[str, int]] = "square_hd"
         expand_prompt: bool = False
         enable_safety_checker: bool = True
+        format: str = "png"
 
     def __init__(
         self,

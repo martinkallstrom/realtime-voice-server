@@ -17,4 +17,4 @@ LLM_IMAGE_PROMPT = {
 }
 
 
-IMAGE_GEN_PROMPT = "Illustrative art of %s In the style of Studio Ghibli."
+IMAGE_GEN_PROMPT = "Illustrative art of %s. In the style of Studio Ghibli. colorful, whimsical."

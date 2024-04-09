@@ -1,9 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 
 import { useDaily } from "@daily-co/daily-react";
-import { useParticipantIds, DailyAudio } from "@daily-co/daily-react";
+import {
+  useParticipantIds,
+  useAppMessage,
+  DailyAudio,
+} from "@daily-co/daily-react";
 import VideoTile from "./VideoTile";
 import DeviceManager from "./DevicePicker";
 
@@ -18,6 +22,9 @@ type State =
 export default function Call() {
   const daily = useDaily();
   const participantIds = useParticipantIds({ filter: "remote" });
+  const sendAppMessage = useAppMessage({
+    onAppMessage: (e) => console.log(e),
+  });
 
   const [state, setState] = useState<State>("idle");
   const [room, setRoom] = useState<string | null>(null);

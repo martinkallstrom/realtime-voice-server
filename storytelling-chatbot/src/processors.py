@@ -7,6 +7,7 @@ from dailyai.pipeline.frame_processor import FrameProcessor
 from dailyai.pipeline.frames import (
     Frame,
     TextFrame,
+    SendAppMessageFrame,
     LLMResponseEndFrame,
     LLMResponseStartFrame,
     UserStoppedSpeakingFrame,
@@ -17,31 +18,12 @@ from prompts import LLM_IMAGE_PROMPT, IMAGE_GEN_PROMPT
 # -------------- Frame Types ------------- #
 
 
-class StoryStartFrame(TextFrame):
-    # Frame for when the story begins
-    pass
-
-
 class StoryPageFrame(TextFrame):
     # Frame for each sentence in the story before a [break]
     pass
 
 
-class StoryPromptFrame(TextFrame):
-    # Frame for prompting the user to continue the story
-    pass
-
-
 # ------------ Frame Processors ----------- #
-
-"""
-class ImagePromptLogger(FrameLogger):
-    async def process_frame(self, frame: Frame) -> AsyncGenerator[Frame, None]:
-        if isinstance(frame, StoryImagePromptFrame):
-            self.logger.info(f"[IMAGE PROMPT]: {frame.text}")
-        yield frame
-"""
-
 
 class StoryImageProcessor(FrameProcessor):
     """
@@ -97,31 +79,18 @@ class StoryProcessor(FrameProcessor):
     def __init__(self, messages, story):
         self._messages = messages
         self._text = ""
-        # self._image_prompt = None
         self._story = story
 
     async def process_frame(self, frame: Frame) -> AsyncGenerator[Frame, None]:
         if isinstance(frame, UserStoppedSpeakingFrame):
             # @TODO: Hide UI elements
-            pass
+            yield SendAppMessageFrame({"cue": "start"}, None)
 
         elif isinstance(frame, TextFrame):
             # We want to look for sentence breaks in the text
             # but since TextFrames are streamed from the LLM
             # we need to keep a buffer of the text we've seen so far
             self._text += frame.text
-
-            """
-            # 1. Looking for < image prompts > in the LLM response
-            if re.search("<", self._text):
-                # Extract the prompt from the text
-                if re.search(">", self._text):
-                    # Extract the prompt from the text
-                    self._image_prompt = re.search(
-                        r'<([^>]*)>', self._text).group(1)  # type: ignore
-                    # Remove the prompt from the text
-                    self._text = re.sub(r'<([^>]*)>', '', self._text)
-            """
 
             # Looking for: [break] in the LLM response
             # We prompted our LLM to add a [break] after each sentence
@@ -135,19 +104,15 @@ class StoryProcessor(FrameProcessor):
                 if len(self._text) > 2:
                     # Append the sentence to the story
                     self._story.append(self._text)
-                    # if self._image_prompt:
-                    #    yield StoryImagePromptFrame(self._image_prompt)
                     yield StoryPageFrame(self._text)
 
                 # Clear the buffer
                 self._text = ""
-                # self._image_prompt = None
 
         # End of LLM response
         elif isinstance(frame, LLMResponseEndFrame):
-            print("LLM RESPONSE END")
             # @TODO: Show UI elements
-            yield StoryPromptFrame(self._text)
+            yield SendAppMessageFrame({"cue": "end"}, None)
             self._text = ""
             yield frame
 

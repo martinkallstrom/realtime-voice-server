@@ -17,7 +17,7 @@ from dailyai.services.open_ai_services import OpenAILLMService
 from services.fal import FalImageGenService
 from services.groq import GroqLLMService
 from processors import StoryProcessor, StoryImageProcessor
-from prompts import IMAGE_GEN_PROMPT, LLM_BASE_PROMPT, LLM_IMAGE_PROMPT
+from prompts import LLM_BASE_PROMPT
 
 
 from dotenv import load_dotenv
@@ -124,7 +124,6 @@ async def main(room_url, token=None):
                 llm_service,
                 story_processor,
                 image_processor,
-                # image_prompt_logger,
                 tts_service,
                 llm_responses,
             ], sink=transport.send_queue)
@@ -145,7 +144,6 @@ async def main(room_url, token=None):
                 user_responses,
                 llm_service,
                 story_processor,
-                # image_prompt_logger,
                 image_processor,
                 tts_service,
                 llm_responses,
