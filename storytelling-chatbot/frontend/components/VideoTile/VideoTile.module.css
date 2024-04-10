@@ -1,5 +1,5 @@
 .videoTile{
-    background-color: brown;
+    background-color: black;
     width: 480px;
     height: 480px;
     mask-image: url('/mask.png');
