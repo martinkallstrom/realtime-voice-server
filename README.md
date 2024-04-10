@@ -4,6 +4,8 @@ Collection of self-contained real-time AI demo applications built with [dailyai]
 
 (... intro text here)
 
+https://daily-co.github.io/dailyai-docs/docs/intro
+
 ---
 
 ## Quickstart

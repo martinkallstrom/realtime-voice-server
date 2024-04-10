@@ -38,18 +38,7 @@ export default function RootLayout({
           mono.variable
         )}
       >
-        <main className="flex flex-1 items-center">{children}</main>
-        <footer className="flex-0 text-center font-mono text-sm text-gray-100 py-6">
-          <span className="bg-gray-800/70 px-3 py-1 rounded-md">
-            Created with{" "}
-            <a
-              href="https://git.new/ai"
-              className="text-violet-300 underline decoration-violet-400 hover:text-violet-100"
-            >
-              git.new/ai
-            </a>
-          </span>
-        </footer>
+        <main className="flex flex-1">{children}</main>
       </body>
     </html>
   );

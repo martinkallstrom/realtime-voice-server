@@ -1,4 +1,4 @@
-dailyai[daily,openai,anthropic,fal]==0.0.5
+dailyai[daily,openai,anthropic,fal]==0.0.6
 fastapi
 uvicorn
 requests

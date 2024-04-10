@@ -16,7 +16,6 @@ export const AudioIndicator: React.FC = () => {
     useCallback((volume) => {
       // this volume number will be between 0 and 1
       // give it a minimum scale of 0.15 to not completely disappear 👻
-      console.log(volume);
       if (volRef.current)
         volRef.current.style.transform = `scale(${Math.max(0.15, volume)})`;
     }, [])
@@ -36,6 +35,30 @@ export const AudioIndicator: React.FC = () => {
           width: 32px;
         }
       `}</style>
+    </div>
+  );
+};
+
+export const AudioIndicatorBar: React.FC = () => {
+  const localSessionId = useLocalSessionId();
+  const audioTrack = useAudioTrack(localSessionId);
+
+  const volRef = useRef<HTMLDivElement>(null);
+
+  useAudioLevel(
+    audioTrack?.persistentTrack,
+    useCallback((volume) => {
+      if (volRef.current)
+        volRef.current.style.width = Math.max(2, volume * 100) + "%";
+    }, [])
+  );
+
+  return (
+    <div className="flex-1 bg-gray-200 h-[8px] rounded-full overflow-hidden">
+      <div
+        className="bg-green-500 h-[8px] w-full rounded-full transition-all duration-100 ease"
+        ref={volRef}
+      />
     </div>
   );
 };

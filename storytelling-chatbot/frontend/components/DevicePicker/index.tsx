@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { IconMicrophone, IconDeviceSpeaker } from "@tabler/icons-react";
+import { AudioIndicatorBar } from "../AudioIndicator";
 
 interface Props {
   // color?: string;
@@ -53,47 +54,61 @@ export default function DevicePicker({}: Props) {
   }, [daily, microphones]);
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-row gap-4 items-center">
-        <IconMicrophone size={24} />
-        <Select onValueChange={handleMicrophoneChange}>
-          <SelectTrigger className="">
-            <SelectValue
-              placeholder={hasMicError ? "error" : currentMic?.device?.label}
-            />
-          </SelectTrigger>
-          <SelectContent>
-            {hasMicError && (
-              <option value="error" disabled>
-                No microphone access.
-              </option>
-            )}
+    <div className="flex flex-col gap-5">
+      <section>
+        <label className="uppercase text-sm tracking-wider text-gray-500">
+          Microphone:
+        </label>
+        <div className="flex flex-row gap-4 items-center mt-2">
+          <IconMicrophone size={24} />
+          <div className="flex flex-col flex-1 gap-3">
+            <Select onValueChange={handleMicrophoneChange}>
+              <SelectTrigger className="">
+                <SelectValue
+                  placeholder={
+                    hasMicError ? "error" : currentMic?.device?.label
+                  }
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {hasMicError && (
+                  <option value="error" disabled>
+                    No microphone access.
+                  </option>
+                )}
 
-            {microphones.map((m) => (
-              <SelectItem key={m.device.deviceId} value={m.device.deviceId}>
-                {m.device.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+                {microphones.map((m) => (
+                  <SelectItem key={m.device.deviceId} value={m.device.deviceId}>
+                    {m.device.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <AudioIndicatorBar />
+          </div>
+        </div>
+      </section>
 
-      <div className="flex flex-row gap-4 items-center">
-        <IconDeviceSpeaker size={24} />
-        <Select onValueChange={handleSpeakerChange}>
-          <SelectTrigger className="">
-            <SelectValue placeholder={currentSpeaker?.device?.label} />
-          </SelectTrigger>
-          <SelectContent>
-            {speakers.map((m) => (
-              <SelectItem key={m.device.deviceId} value={m.device.deviceId}>
-                {m.device.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
+      <section>
+        <label className="uppercase text-sm tracking-wider text-gray-500">
+          Speakers:
+        </label>
+        <div className="flex flex-row gap-4 items-center mt-2">
+          <IconDeviceSpeaker size={24} />
+          <Select onValueChange={handleSpeakerChange}>
+            <SelectTrigger className="">
+              <SelectValue placeholder={currentSpeaker?.device?.label} />
+            </SelectTrigger>
+            <SelectContent>
+              {speakers.map((m) => (
+                <SelectItem key={m.device.deviceId} value={m.device.deviceId}>
+                  {m.device.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </section>
       {hasMicError && (
         <div className="error">
           {micState === "blocked" ? (

@@ -7,15 +7,15 @@ import argparse
 from dailyai.pipeline.pipeline import Pipeline
 from dailyai.pipeline.frames import EndPipeFrame, LLMMessagesFrame, SendAppMessageFrame
 from dailyai.pipeline.aggregators import (
-    UserResponseAggregator,
-    LLMResponseAggregator,
+    LLMUserResponseAggregator,
+    LLMAssistantResponseAggregator,
     LLMAssistantContextAggregator
 )
 from dailyai.transports.daily_transport import DailyTransport
 from dailyai.services.elevenlabs_ai_service import ElevenLabsTTSService
 from dailyai.services.open_ai_services import OpenAILLMService
+from dailyai.services.fal_ai_services import FalImageGenService
 
-from services.fal import FalImageGenService
 from services.groq import GroqLLMService
 from processors import StoryProcessor, StoryImageProcessor
 from prompts import LLM_BASE_PROMPT, LLM_INTRO_PROMPT, CUE_USER_TURN
@@ -91,8 +91,8 @@ async def main(room_url, token=None):
         story_pages = []
 
         # We need aggregators to keep track of user and LLM responses
-        llm_responses = LLMResponseAggregator(message_history)
-        user_responses = UserResponseAggregator(message_history)
+        llm_responses = LLMAssistantResponseAggregator(message_history)
+        user_responses = LLMUserResponseAggregator(message_history)
 
         # -------------- Processors ------------- #
 
@@ -107,7 +107,7 @@ async def main(room_url, token=None):
         start_storytime_event = asyncio.Event()
 
         @transport.event_handler("on_first_other_participant_joined")
-        async def on_first_other_participant_joined(transport):
+        async def on_first_other_participant_joined(transport, participant):
             logger.debug("Participant joined, storytime commence!")
             start_storytime_event.set()
 

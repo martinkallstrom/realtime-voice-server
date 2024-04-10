@@ -95,6 +95,15 @@ body{
   }
 }
 
-.cardAnim {
-  animation: fadeInSlideUp 1s ease-out;
+.fade-in {
+  animation: fadeIn 1s ease-out;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }

@@ -7,7 +7,7 @@ import {
 } from "@daily-co/daily-react";
 import VideoTile from "@/components/VideoTile";
 import { Button } from "@/components/ui/button";
-import DevicePicker from "@/components/DevicePicker";
+import UserInputIndicator from "@/components/UserInputIndicator";
 
 interface StoryProps {
   handleLeave: () => void;
@@ -41,12 +41,10 @@ const Story: React.FC<StoryProps> = ({ handleLeave }) => {
   });
 
   return (
-    <div>
-      <div className="absolute inset-0 bg-gray-900 bg-opacity-80 z-10"></div>
+    <div className="w-full flex flex-col flex-1 self-stretch">
+      <div className="absolute inset-0 bg-gray-900 bg-opacity-80 z-10 fade-in"></div>
 
-      <div className="relative z-20">
-        <h1>Story Component</h1>
-
+      <div className="relative z-20 flex-1">
         {participantIds.length ? (
           <VideoTile sessionId={participantIds[0]} />
         ) : (
@@ -54,8 +52,10 @@ const Story: React.FC<StoryProps> = ({ handleLeave }) => {
         )}
 
         <Button onClick={() => handleLeave()}>Finish story</Button>
+
         <DailyAudio />
       </div>
+      <UserInputIndicator active={storyState === "user"} />
     </div>
   );
 };
