@@ -1,4 +1,5 @@
 python-dotenv
 requests
 fastapi[all]
-dailyai[daily,openai]
+uvicorn
+dailyai[daily,openai,silero]

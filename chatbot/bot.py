@@ -13,10 +13,10 @@ from dailyai.pipeline.frames import (
     ImageFrame,
     SpriteFrame,
     Frame,
-    LLMResponseEndFrame,
     LLMMessagesFrame,
     AudioFrame,
     PipelineStartedFrame,
+    TTSEndFrame,
 )
 from dailyai.services.ai_services import AIService
 from dailyai.pipeline.pipeline import Pipeline
@@ -71,7 +71,7 @@ class TalkingAnimation(AIService):
                 self._is_talking = True
             else:
                 yield frame
-        elif isinstance(frame, LLMResponseEndFrame):
+        elif isinstance(frame, TTSEndFrame):
             yield quiet_frame
             yield frame
             self._is_talking = False
@@ -123,11 +123,11 @@ async def main(room_url: str, token):
         messages = [
             {
                 "role": "system",
-                "content": "You are Chatbot, a friendly, helpful robot. Your goal is to demonstrate your capabilities in a succinct way. Your output will be converted to audio. Respond to what the user said in a creative and helpful way, but keep your responses brief. Start by introducing yourself.",
+                "content": "You are Chatbot, a friendly, helpful robot. Your goal is to demonstrate your capabilities in a succinct way. Your output will be converted to audio so don't include special characters in your answers. Respond to what the user said in a creative and helpful way, but keep your responses brief. Start by introducing yourself.",
             },
         ]
 
-        @ transport.event_handler("on_first_other_participant_joined")
+        @transport.event_handler("on_first_other_participant_joined")
         async def on_first_other_participant_joined(transport, participant):
             print(f"!!! in here, pipeline.source is {pipeline.source}")
             await pipeline.queue_frames([LLMMessagesFrame(messages)])
