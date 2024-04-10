@@ -9,7 +9,6 @@ from dailyai.pipeline.frames import AudioFrame, EndPipeFrame, LLMMessagesFrame, 
 from dailyai.pipeline.aggregators import (
     LLMUserResponseAggregator,
     LLMAssistantResponseAggregator,
-    LLMAssistantContextAggregator
 )
 from dailyai.transports.daily_transport import DailyTransport
 from dailyai.services.elevenlabs_ai_service import ElevenLabsTTSService
@@ -121,10 +120,8 @@ async def main(room_url, token=None):
 
             # The intro pipeline is used to start
             # the story (as per LLM_INTRO_PROMPT)
-            lca = LLMAssistantContextAggregator(message_history)
             intro_pipeline = Pipeline(processors=[
                 llm_service,
-                lca,
                 tts_service,
             ], sink=transport.send_queue)
 
@@ -146,7 +143,7 @@ async def main(room_url, token=None):
                 user_responses,
                 llm_service,
                 story_processor,
-                image_processor,
+                # image_processor,
                 tts_service,
                 llm_responses,
             ])

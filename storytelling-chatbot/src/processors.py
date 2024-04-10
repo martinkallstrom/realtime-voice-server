@@ -13,6 +13,7 @@ from dailyai.pipeline.frames import (
 
 from utils.helpers import load_sounds
 from prompts import LLM_IMAGE_PROMPT, IMAGE_GEN_PROMPT, CUE_USER_TURN, CUE_ASSISTANT_TURN
+import asyncio
 
 sounds = load_sounds(["talking.wav", "listening.wav", "ding.wav"])
 
@@ -51,6 +52,7 @@ class StoryImageProcessor(FrameProcessor):
 
     async def process_frame(self, frame: Frame) -> AsyncGenerator[Frame, None]:
         if isinstance(frame, StoryPageFrame):
+            yield frame
             async for f in self._groq_service.run_llm_async([
                 LLM_IMAGE_PROMPT,
                 {
@@ -58,10 +60,8 @@ class StoryImageProcessor(FrameProcessor):
                     "content": "".join(self._story)
                 }
             ]):
-                print(f)
                 async for i in self._fal_service.process_frame(TextFrame(IMAGE_GEN_PROMPT % f)):
                     yield i
-            yield frame
         else:
             yield frame
 
@@ -109,18 +109,20 @@ class StoryProcessor(FrameProcessor):
                     # Append the sentence to the story
                     self._story.append(self._text)
                     yield StoryPageFrame(self._text)
+                    # Assert that it's the LLMs turn, until we're finished
+                    yield SendAppMessageFrame(CUE_ASSISTANT_TURN, None)
                 # Clear the buffer
                 self._text = ""
 
         # End of LLM response
         # Driven by the prompt, the LLM should have asked the user for input
         elif isinstance(frame, LLMResponseEndFrame):
-            # Send an app message to the UI
-            yield SendAppMessageFrame(CUE_USER_TURN, None)
             # We use a different frame type, as to avoid image generation ingest
             yield StoryPromptFrame(self._text)
             self._text = ""
             yield frame
+            # Send an app message to the UI
+            yield SendAppMessageFrame(CUE_USER_TURN, None)
             yield AudioFrame(sounds["listening"])
 
         # Anything that is not a TextFrame pass through
