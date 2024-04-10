@@ -20,11 +20,11 @@ LLM_BASE_PROMPT = {
 
 LLM_IMAGE_PROMPT = {
     "role": "system",
-    "content": "I will provide you with a story and the last sentence. \
-        Your job is to turn that last sentence into an image prompt that I can use to generate an illustration. \
+    "content": "I will provide you with a story. \
+        Your job is to turn the last sentence into an image prompt that I can use to generate an illustration. \
         You should provide as much detail in your image prompt as you can to help recreate the current scene depicted in the last sentence \
         When describing characters, you should include descriptions from the context of the story. \
-        Please keep your results to less than 100-150 characters. Respond with just the image prompt with no additional formatting or text."
+        Please keep your results to less than 80-100 characters. Respond with just the image prompt with no additional formatting or text."
 }
 
 

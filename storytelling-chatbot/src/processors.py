@@ -1,7 +1,7 @@
 from typing import AsyncGenerator
 import re
 
-from dailyai.pipeline.frames import TextFrame, Frame
+from dailyai.pipeline.frames import TextFrame, Frame, AudioFrame
 from dailyai.pipeline.frame_processor import FrameProcessor
 from dailyai.pipeline.frames import (
     Frame,
@@ -11,10 +11,13 @@ from dailyai.pipeline.frames import (
     UserStoppedSpeakingFrame,
 )
 
+from utils.helpers import load_sounds
 from prompts import LLM_IMAGE_PROMPT, IMAGE_GEN_PROMPT, CUE_USER_TURN, CUE_ASSISTANT_TURN
 
+sounds = load_sounds(["talking.wav", "listening.wav", "ding.wav"])
 
 # -------------- Frame Types ------------- #
+
 
 class StoryPageFrame(TextFrame):
     # Frame for each sentence in the story before a [break]
@@ -53,10 +56,6 @@ class StoryImageProcessor(FrameProcessor):
                 {
                     "role": "user",
                     "content": "".join(self._story)
-                },
-                {
-                    "role": "user",
-                    "content": self._story[-1]
                 }
             ]):
                 async for i in self._fal_service.process_frame(TextFrame(IMAGE_GEN_PROMPT % f)):
@@ -88,6 +87,7 @@ class StoryProcessor(FrameProcessor):
         if isinstance(frame, UserStoppedSpeakingFrame):
             # Send an app message to the UI
             yield SendAppMessageFrame(CUE_ASSISTANT_TURN, None)
+            yield AudioFrame(sounds["talking"])
 
         elif isinstance(frame, TextFrame):
             # We want to look for sentence breaks in the text
@@ -108,6 +108,7 @@ class StoryProcessor(FrameProcessor):
                     # Append the sentence to the story
                     self._story.append(self._text)
                     yield StoryPageFrame(self._text)
+                    yield AudioFrame(sounds["ding"])
 
                 # Clear the buffer
                 self._text = ""
@@ -121,6 +122,7 @@ class StoryProcessor(FrameProcessor):
             yield StoryPromptFrame(self._text)
             self._text = ""
             yield frame
+            yield AudioFrame(sounds["listening"])
 
         # Anything that is not a TextFrame pass through
         else:

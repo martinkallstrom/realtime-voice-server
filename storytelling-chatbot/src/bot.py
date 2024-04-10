@@ -5,7 +5,7 @@ import os
 import argparse
 
 from dailyai.pipeline.pipeline import Pipeline
-from dailyai.pipeline.frames import EndPipeFrame, LLMMessagesFrame, SendAppMessageFrame
+from dailyai.pipeline.frames import AudioFrame, EndPipeFrame, LLMMessagesFrame, SendAppMessageFrame
 from dailyai.pipeline.aggregators import (
     LLMUserResponseAggregator,
     LLMAssistantResponseAggregator,
@@ -19,7 +19,7 @@ from dailyai.services.fal_ai_services import FalImageGenService
 from services.groq import GroqLLMService
 from processors import StoryProcessor, StoryImageProcessor
 from prompts import LLM_BASE_PROMPT, LLM_INTRO_PROMPT, CUE_USER_TURN
-
+from utils.helpers import load_sounds
 
 from dotenv import load_dotenv
 load_dotenv(override=True)
@@ -27,6 +27,9 @@ load_dotenv(override=True)
 logging.basicConfig(format=f"[STORYBOT] %(levelno)s %(asctime)s %(message)s")
 logger = logging.getLogger("dailyai")
 logger.setLevel(logging.INFO)
+
+
+sounds = load_sounds(["listening.wav"])
 
 
 async def main(room_url, token=None):
@@ -129,6 +132,7 @@ async def main(room_url, token=None):
                 [
                     LLMMessagesFrame([LLM_INTRO_PROMPT]),
                     SendAppMessageFrame(CUE_USER_TURN, None),
+                    AudioFrame(sounds["listening"]),
                     EndPipeFrame(),
                 ]
             )
@@ -142,7 +146,7 @@ async def main(room_url, token=None):
                 user_responses,
                 llm_service,
                 story_processor,
-                # image_processor,
+                image_processor,
                 tts_service,
                 llm_responses,
             ])
