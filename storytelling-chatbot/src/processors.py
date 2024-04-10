@@ -58,6 +58,7 @@ class StoryImageProcessor(FrameProcessor):
                     "content": "".join(self._story)
                 }
             ]):
+                print(f)
                 async for i in self._fal_service.process_frame(TextFrame(IMAGE_GEN_PROMPT % f)):
                     yield i
             yield frame

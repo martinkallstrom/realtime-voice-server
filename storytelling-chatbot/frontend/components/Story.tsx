@@ -44,7 +44,7 @@ const Story: React.FC<StoryProps> = ({ handleLeave }) => {
 
   return (
     <div className="w-full flex flex-col flex-1 self-stretch">
-      <div className="absolute top-20 w-full z-20 text-center">
+      <div className="absolute top-20 w-full text-center z-50">
         <WaveText active={storyState === "user"} />
       </div>
 
@@ -54,9 +54,9 @@ const Story: React.FC<StoryProps> = ({ handleLeave }) => {
           Exit
         </Button>
       </header>
-      <div className="absolute inset-0 bg-gray-900 bg-opacity-80 z-10 fade-in"></div>
+      <div className="absolute inset-0 bg-gray-800 bg-opacity-90 z-10 fade-in"></div>
 
-      <div className="relative z-20 flex-1">
+      <div className="relative z-20 flex-1 flex items-center justify-center">
         {participantIds.length ? (
           <VideoTile sessionId={participantIds[0]} />
         ) : (

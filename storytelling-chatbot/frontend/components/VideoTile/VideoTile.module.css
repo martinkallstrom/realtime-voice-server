@@ -1,8 +1,10 @@
 .videoTile{
     background-color: black;
-    width: 480px;
-    height: 480px;
-    mask-image: url('/mask.png');
+    width: 560px;
+    height: 560px;
+    mask-image: url('/alpha-mask.gif');
     mask-size: cover;
     mask-repeat: no-repeat;
+    margin:0 auto;
+    z-index: 10;
 }

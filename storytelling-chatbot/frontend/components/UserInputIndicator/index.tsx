@@ -18,7 +18,7 @@ export default function UserInputIndicator({ active }: Props) {
     onAppMessage: (e: DailyEventObjectAppMessage<any>) => {
       if (e.fromId && e.fromId === "transcription") {
         if (e.data.user_id === "") {
-          setTranscription(e.data.text.split(" "));
+          setTranscription((t) => [...t, ...e.data.text.split(" ")]);
         }
       }
     },
@@ -26,9 +26,7 @@ export default function UserInputIndicator({ active }: Props) {
 
   useEffect(() => {
     if (active) return;
-
     const t = setTimeout(() => setTranscription([]), 4000);
-
     return () => clearTimeout(t);
   }, [active]);
 
