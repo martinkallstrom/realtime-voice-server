@@ -3,14 +3,14 @@
 import React from "react";
 import { DailyProvider, useCallObject } from "@daily-co/daily-react";
 
-import Session from "../components/Session";
+import App from "../components/App";
 
 export default function Home() {
   const callObject = useCallObject({});
 
   return (
     <DailyProvider callObject={callObject}>
-      <Session />
+      <App />
     </DailyProvider>
   );
 }

@@ -3,19 +3,21 @@
 import { useEffect } from "react";
 import { DailyMeetingState } from "@daily-co/daily-js";
 import { useDaily, useDevices } from "@daily-co/daily-react";
-import clsx from "clsx";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Props {
-  color?: string;
-  errorColor?: string;
-  label?: React.ReactNode;
+  // color?: string;
+  // errorColor?: string;
+  // label?: React.ReactNode;
 }
 
-export default function DevicePicker({
-  color,
-  errorColor = "var(--color-orange)",
-  label,
-}: Props) {
+export default function DevicePicker({}: Props) {
   const daily = useDaily();
   const {
     currentMic,
@@ -28,12 +30,12 @@ export default function DevicePicker({
     setSpeaker,
   } = useDevices();
 
-  const handleMicrophoneChange = (ev: React.ChangeEvent<HTMLSelectElement>) => {
-    setMicrophone(ev.target.value);
+  const handleMicrophoneChange = (value: string) => {
+    setMicrophone(value);
   };
 
-  const handleSpeakerChange = (ev: React.ChangeEvent<HTMLSelectElement>) => {
-    setSpeaker(ev.target.value);
+  const handleSpeakerChange = (value: string) => {
+    setSpeaker(value);
   };
 
   useEffect(() => {
@@ -45,61 +47,49 @@ export default function DevicePicker({
       "loaded",
     ];
     if (meetingStatesBeforeJoin.includes(meetingState)) {
-      daily.startCamera({ startVideoOff: true, startAudioOff: true });
+      daily.startCamera({ startVideoOff: true, startAudioOff: false });
     }
   }, [daily, microphones]);
 
   return (
     <div className="device-picker">
-      {label && (
-        <label className="text-md font-500" htmlFor="device-picker">
-          {label}
-        </label>
-      )}
-      <label>Microphone:</label>
-      <select
-        className={clsx("text-base-mono font-500")}
-        id="device-picker"
-        value={hasMicError ? "error" : currentMic?.device?.deviceId}
-        onChange={handleMicrophoneChange}
-        style={
-          {
-            "--color": color,
-            "--error-color": errorColor,
-          } as React.CSSProperties
-        }
-      >
-        {hasMicError && (
-          <option value="error" disabled>
-            No microphone access.
-          </option>
-        )}
-        {microphones.map((m) => (
-          <option key={m.device.deviceId} value={m.device.deviceId}>
-            {m.device.label}
-          </option>
-        ))}
-      </select>
+      <label htmlFor="mic">Microphone:</label>
+
+      <Select onValueChange={handleMicrophoneChange}>
+        <SelectTrigger className="">
+          <SelectValue
+            placeholder={hasMicError ? "error" : currentMic?.device?.label}
+          />
+        </SelectTrigger>
+        <SelectContent>
+          {hasMicError && (
+            <option value="error" disabled>
+              No microphone access.
+            </option>
+          )}
+
+          {microphones.map((m) => (
+            <SelectItem key={m.device.deviceId} value={m.device.deviceId}>
+              {m.device.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
 
       <label>Speaker:</label>
-      <select
-        className={clsx("text-base-mono font-500")}
-        id="device-picker"
-        value={currentSpeaker?.device?.deviceId}
-        onChange={handleSpeakerChange}
-        style={
-          {
-            "--color": color,
-            "--error-color": errorColor,
-          } as React.CSSProperties
-        }
-      >
-        {speakers.map((m) => (
-          <option key={m.device.deviceId} value={m.device.deviceId}>
-            {m.device.label}
-          </option>
-        ))}
-      </select>
+
+      <Select onValueChange={handleSpeakerChange}>
+        <SelectTrigger className="">
+          <SelectValue placeholder={currentSpeaker?.device?.label} />
+        </SelectTrigger>
+        <SelectContent>
+          {speakers.map((m) => (
+            <SelectItem key={m.device.deviceId} value={m.device.deviceId}>
+              {m.device.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
 
       {hasMicError && (
         <div className="error">

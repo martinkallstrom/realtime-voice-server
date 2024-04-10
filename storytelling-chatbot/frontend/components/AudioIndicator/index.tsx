@@ -5,7 +5,7 @@ import {
 } from "@daily-co/daily-react";
 import { useCallback, useRef } from "react";
 
-export const AudioLevelMonitor: React.FC = () => {
+export const AudioIndicator: React.FC = () => {
   const localSessionId = useLocalSessionId();
   const audioTrack = useAudioTrack(localSessionId);
 
@@ -40,4 +40,4 @@ export const AudioLevelMonitor: React.FC = () => {
   );
 };
 
-export default AudioLevelMonitor;
+export default AudioIndicator;

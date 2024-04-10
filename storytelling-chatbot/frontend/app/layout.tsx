@@ -1,9 +1,10 @@
 import React from "react";
 
 import "./globals.css";
-
 import type { Metadata } from "next";
 import { Space_Grotesk, Space_Mono } from "next/font/google";
+
+import { cn } from "@/lib/utils";
 
 // Font
 const sans = Space_Grotesk({
@@ -31,17 +32,23 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${sans.variable} ${mono.variable} flex flex-col min-h-screen p-6`}
+        className={cn(
+          "min-h-screen bg-background font-sans antialiased flex flex-col",
+          sans.variable,
+          mono.variable
+        )}
       >
-        <main className="flex flex-1">{children}</main>
-        <footer className="flex-0 text-center font-mono text-xs text-gray-500">
-          Created with{" "}
-          <a
-            href="https://git.new/ai"
-            className="text-violet-700 underline decoration-violet-200"
-          >
-            git.new/ai
-          </a>
+        <main className="flex flex-1 items-center">{children}</main>
+        <footer className="flex-0 text-center font-mono text-sm text-gray-100 py-6">
+          <span className="bg-gray-800/70 px-3 py-1 rounded-md">
+            Created with{" "}
+            <a
+              href="https://git.new/ai"
+              className="text-violet-300 underline decoration-violet-400 hover:text-violet-100"
+            >
+              git.new/ai
+            </a>
+          </span>
         </footer>
       </body>
     </html>

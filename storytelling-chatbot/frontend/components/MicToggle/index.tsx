@@ -4,6 +4,7 @@ import {
   useMediaTrack,
 } from "@daily-co/daily-react";
 import { useCallback } from "react";
+import { IconMicrophone, IconMicrophoneOff } from "@tabler/icons-react";
 
 export const MicToggle: React.FC = () => {
   const daily = useDaily();
@@ -17,7 +18,11 @@ export const MicToggle: React.FC = () => {
     daily.setLocalAudio(isMicMuted);
   }, [daily, isMicMuted]);
 
-  const text = isMicMuted ? "muted" : "unmuted";
+  const text = isMicMuted ? (
+    <IconMicrophone size={21} />
+  ) : (
+    <IconMicrophoneOff size={21} />
+  );
 
   return (
     <button className="MicToggle UIButton" onClick={handleClick}>
