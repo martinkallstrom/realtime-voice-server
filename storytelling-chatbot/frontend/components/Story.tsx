@@ -42,18 +42,20 @@ const Story: React.FC<StoryProps> = ({ handleLeave }) => {
 
   return (
     <div>
-      <h1>Story Component</h1>
+      <div className="absolute inset-0 bg-gray-900 bg-opacity-80 z-10"></div>
 
-      {participantIds.length ? (
-        <VideoTile sessionId={participantIds[0]} />
-      ) : (
-        <div>Loading</div>
-      )}
+      <div className="relative z-20">
+        <h1>Story Component</h1>
 
-      <Button onClick={() => handleLeave()} />
-      <DailyAudio />
+        {participantIds.length ? (
+          <VideoTile sessionId={participantIds[0]} />
+        ) : (
+          <div>Loading</div>
+        )}
 
-      <DevicePicker />
+        <Button onClick={() => handleLeave()}>Finish story</Button>
+        <DailyAudio />
+      </div>
     </div>
   );
 };

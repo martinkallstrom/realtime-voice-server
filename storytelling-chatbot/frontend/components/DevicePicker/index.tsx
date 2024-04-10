@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { IconMicrophone, IconDeviceSpeaker } from "@tabler/icons-react";
 
 interface Props {
   // color?: string;
@@ -52,44 +53,46 @@ export default function DevicePicker({}: Props) {
   }, [daily, microphones]);
 
   return (
-    <div className="device-picker">
-      <label htmlFor="mic">Microphone:</label>
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-row gap-4 items-center">
+        <IconMicrophone size={24} />
+        <Select onValueChange={handleMicrophoneChange}>
+          <SelectTrigger className="">
+            <SelectValue
+              placeholder={hasMicError ? "error" : currentMic?.device?.label}
+            />
+          </SelectTrigger>
+          <SelectContent>
+            {hasMicError && (
+              <option value="error" disabled>
+                No microphone access.
+              </option>
+            )}
 
-      <Select onValueChange={handleMicrophoneChange}>
-        <SelectTrigger className="">
-          <SelectValue
-            placeholder={hasMicError ? "error" : currentMic?.device?.label}
-          />
-        </SelectTrigger>
-        <SelectContent>
-          {hasMicError && (
-            <option value="error" disabled>
-              No microphone access.
-            </option>
-          )}
+            {microphones.map((m) => (
+              <SelectItem key={m.device.deviceId} value={m.device.deviceId}>
+                {m.device.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
-          {microphones.map((m) => (
-            <SelectItem key={m.device.deviceId} value={m.device.deviceId}>
-              {m.device.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      <label>Speaker:</label>
-
-      <Select onValueChange={handleSpeakerChange}>
-        <SelectTrigger className="">
-          <SelectValue placeholder={currentSpeaker?.device?.label} />
-        </SelectTrigger>
-        <SelectContent>
-          {speakers.map((m) => (
-            <SelectItem key={m.device.deviceId} value={m.device.deviceId}>
-              {m.device.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <div className="flex flex-row gap-4 items-center">
+        <IconDeviceSpeaker size={24} />
+        <Select onValueChange={handleSpeakerChange}>
+          <SelectTrigger className="">
+            <SelectValue placeholder={currentSpeaker?.device?.label} />
+          </SelectTrigger>
+          <SelectContent>
+            {speakers.map((m) => (
+              <SelectItem key={m.device.deviceId} value={m.device.deviceId}>
+                {m.device.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       {hasMicError && (
         <div className="error">
@@ -120,48 +123,6 @@ export default function DevicePicker({}: Props) {
           )}
         </div>
       )}
-      <style jsx>{`
-        .device-picker {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-        label {
-          color: var(--color);
-          opacity: 0.6;
-        }
-        select {
-          background: transparent;
-          border: 1px solid transparent;
-          border-radius: 16px;
-          color: var(--color);
-          flex: 1;
-          max-width: 100%;
-          overflow: hidden;
-          padding: 2px 6px;
-          text-overflow: ellipsis;
-          transition: border-color 250ms ease;
-          width: 100%;
-        }
-        select:focus-visible,
-        select:hover {
-          border: 1px solid var(--color);
-          cursor: pointer;
-          outline: none;
-        }
-        .error {
-          align-items: flex-start;
-          color: var(--error-color);
-          display: flex;
-          gap: 4px;
-        }
-        .error :global(svg) {
-          flex: none;
-        }
-        .error p {
-          margin: 0;
-        }
-      `}</style>
     </div>
   );
 }
