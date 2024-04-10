@@ -108,8 +108,6 @@ class StoryProcessor(FrameProcessor):
                     # Append the sentence to the story
                     self._story.append(self._text)
                     yield StoryPageFrame(self._text)
-                    yield AudioFrame(sounds["ding"])
-
                 # Clear the buffer
                 self._text = ""
 
