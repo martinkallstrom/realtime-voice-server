@@ -1,13 +1,16 @@
 FROM python:3.10-bullseye
 
-RUN pip3 install dailyai[daily,openai,silero]
-RUN pip3 install flask flask-cors gunicorn requests python-dotenv
-
 RUN mkdir /app
 RUN mkdir /app/assets
+RUN mkdir /app/utils
 COPY *.py /app/
+COPY requirements.txt /app/
 copy assets/* /app/assets/
+copy utils/* /app/utils/
 
-EXPOSE 8000
+WORKDIR /app
+RUN pip3 install -r requirements.txt
 
-CMD ["python3", "/app/server.py"]
+EXPOSE 7860
+
+CMD ["python3", "server.py"]

@@ -9,9 +9,19 @@ pip install -r requirements.txt
 
 cp env.example .env # and add your credentials
 
-python bot.py
 ```
 
 ## Run the server
 
-## Build the Docker image
+```bash
+python server.py
+```
+
+Then, visit `http://localhost:7860/start` in your browser to start a chatbot session.
+
+## Build and test the Docker image
+
+```
+docker build -t chatbot .
+docker run --env-file .env -p 7860:7860 chatbot
+```

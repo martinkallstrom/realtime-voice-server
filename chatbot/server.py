@@ -38,37 +38,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount the static directory
-STATIC_DIR = "frontend/out"
-app.mount("/static", StaticFiles(directory=STATIC_DIR,
-          html=True), name="static")
 
-
-@app.post("/create")
-async def create_room(request: Request) -> JSONResponse:
-    data = await request.json()
-
-    if data.get('room_url') is not None:
-        room_url = data.get('room_url')
-        room_name = get_name_from_url(room_url)
-    else:
-        room_url, room_name = _create_room()
-
-    token = get_token(room_url)
-
-    return JSONResponse({"room_url": room_url, "room_name": room_name, "token": token})
-
-
-@app.post("/start")
-async def start_agent(request: Request) -> JSONResponse:
-    data = await request.json()
-
-    # Is this a webhook creation request?
-    if "test" in data:
-        return JSONResponse({"test": True})
-
+@app.get("/start")
+async def start_agent(request: Request):
+    print(f"!!! Creating room")
+    room_url, room_name = _create_room()
+    print(f"!!! Room URL: {room_url}")
     # Ensure the room property is present
-    room_url = data.get('room_url')
     if not room_url:
         raise HTTPException(
             status_code=500,
@@ -104,7 +80,7 @@ async def start_agent(request: Request) -> JSONResponse:
         raise HTTPException(
             status_code=500, detail=f"Failed to start subprocess: {e}")
 
-    return JSONResponse({"bot_id": proc.pid, "room_url": room_url})
+    return RedirectResponse(room_url)
 
 
 @app.get("/status/{pid}")
@@ -124,24 +100,6 @@ def get_status(pid: int):
         status = "finished"
 
     return JSONResponse({"bot_id": pid, "status": status})
-
-
-@app.get("/{path_name:path}", response_class=FileResponse)
-async def catch_all(path_name: Optional[str] = ""):
-    print(path_name)
-    if path_name == "":
-        return FileResponse(f"{STATIC_DIR}/index.html")
-
-    file_path = Path(STATIC_DIR) / (path_name or "")
-
-    if file_path.is_file():
-        return file_path
-
-    html_file_path = file_path.with_suffix(".html")
-    if html_file_path.is_file():
-        return FileResponse(html_file_path)
-
-    raise HTTPException(status_code=450, detail="Incorrect API call")
 
 
 if __name__ == "__main__":
