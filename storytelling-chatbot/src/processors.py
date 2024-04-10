@@ -2,24 +2,27 @@ from typing import AsyncGenerator
 import re
 
 from dailyai.pipeline.frames import TextFrame, Frame
-from dailyai.services.ai_services import FrameLogger
 from dailyai.pipeline.frame_processor import FrameProcessor
 from dailyai.pipeline.frames import (
     Frame,
     TextFrame,
     SendAppMessageFrame,
     LLMResponseEndFrame,
-    LLMResponseStartFrame,
     UserStoppedSpeakingFrame,
 )
 
-from prompts import LLM_IMAGE_PROMPT, IMAGE_GEN_PROMPT
+from prompts import LLM_IMAGE_PROMPT, IMAGE_GEN_PROMPT, CUE_USER_TURN, CUE_ASSISTANT_TURN
+
 
 # -------------- Frame Types ------------- #
 
-
 class StoryPageFrame(TextFrame):
     # Frame for each sentence in the story before a [break]
+    pass
+
+
+class StoryPromptFrame(TextFrame):
+    # Frame for prompting the user for input
     pass
 
 
@@ -83,8 +86,8 @@ class StoryProcessor(FrameProcessor):
 
     async def process_frame(self, frame: Frame) -> AsyncGenerator[Frame, None]:
         if isinstance(frame, UserStoppedSpeakingFrame):
-            # @TODO: Hide UI elements
-            yield SendAppMessageFrame({"cue": "start"}, None)
+            # Send an app message to the UI
+            yield SendAppMessageFrame(CUE_ASSISTANT_TURN, None)
 
         elif isinstance(frame, TextFrame):
             # We want to look for sentence breaks in the text
@@ -110,9 +113,12 @@ class StoryProcessor(FrameProcessor):
                 self._text = ""
 
         # End of LLM response
+        # Driven by the prompt, the LLM should have asked the user for input
         elif isinstance(frame, LLMResponseEndFrame):
-            # @TODO: Show UI elements
-            yield SendAppMessageFrame({"cue": "end"}, None)
+            # Send an app message to the UI
+            yield SendAppMessageFrame(CUE_USER_TURN, None)
+            # We use a different frame type, as to avoid image generation ingest
+            yield StoryPromptFrame(self._text)
             self._text = ""
             yield frame
 

@@ -164,5 +164,5 @@ if __name__ == "__main__":
         "server:app",
         host=config.host,
         port=config.port,
-        reload=config.reload,
+        reload=config.reload
     )

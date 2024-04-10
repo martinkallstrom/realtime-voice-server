@@ -117,6 +117,11 @@ Of course, these demos attempt to keep things simple and are unopinionated regar
 
 Creating virualized worker pools and on-demand instances is out of scope for these examples, but we have shared various implementation ideas here.
 
+#### SSL
+
+`docker build --build-arg USE_LETSENCRYPT=1 username/app:tag .`
+...
+
 ---
 
 ## Getting help

@@ -45,17 +45,17 @@ class FalImageGenService(ImageGenService):
         if key_secret:
             os.environ["FAL_KEY_SECRET"] = key_secret
 
-    async def run_image_gen(self, sentence) -> tuple[str, bytes]:
-        def get_image_url(sentence):
-            handler = fal.apps.submit(
+    async def run_image_gen(self, prompt) -> tuple[str, bytes]:
+        def get_image_url(prompt):
+            handler = fal.apps.submit(  # type: ignore
                 self._model,
                 arguments={
-                    "prompt": sentence,
+                    "prompt": prompt,
                     **self._params.dict(),
                 },
             )
             for event in handler.iter_events():
-                if isinstance(event, fal.apps.InProgress):
+                if isinstance(event, fal.apps.InProgress):  # type: ignore
                     pass
 
             result = handler.get()
@@ -66,7 +66,7 @@ class FalImageGenService(ImageGenService):
 
             return image_url
 
-        image_url = await asyncio.to_thread(get_image_url, sentence)
+        image_url = await asyncio.to_thread(get_image_url, prompt)
 
         # Load the image from the url
         async with self._aiohttp_session.get(image_url) as response:

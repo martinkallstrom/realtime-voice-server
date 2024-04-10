@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 
 import { useDaily } from "@daily-co/daily-react";
 import {
@@ -10,6 +10,8 @@ import {
 } from "@daily-co/daily-react";
 import VideoTile from "./VideoTile";
 import DeviceManager from "./DevicePicker";
+import AudioLevelMonitor from "./AudioLevelMonitor";
+import { MicToggle } from "./MicToggle";
 
 type State =
   | "idle"
@@ -22,13 +24,28 @@ type State =
 export default function Call() {
   const daily = useDaily();
   const participantIds = useParticipantIds({ filter: "remote" });
-  const sendAppMessage = useAppMessage({
-    onAppMessage: (e) => console.log(e),
-  });
 
   const [state, setState] = useState<State>("idle");
   const [room, setRoom] = useState<string | null>(null);
   const [botId, setBotId] = useState<string | null>(null);
+
+  useAppMessage({
+    onAppMessage: (e) => {
+      if (!daily) return;
+
+      if (e.fromId === "transcription") {
+        console.log(e.data?.text);
+      }
+
+      if (!e.data?.cue) return;
+
+      if (e.data?.cue === "user_turn") {
+        daily.setLocalAudio(true);
+      } else {
+        daily.setLocalAudio(false);
+      }
+    },
+  });
 
   async function start() {
     setState("connecting");
@@ -97,6 +114,8 @@ export default function Call() {
           <div>Loading</div>
         )}
         <DailyAudio />
+        <MicToggle />
+        <AudioLevelMonitor />
         <button onClick={() => leave()}>Leave</button>
       </div>
     );
@@ -105,6 +124,7 @@ export default function Call() {
   return (
     <div>
       {state} - {room}
+      <p>For best results: use a quiet environment</p>
       <button onClick={() => start()}>Start</button>
     </div>
   );

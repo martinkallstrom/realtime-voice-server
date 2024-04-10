@@ -5,10 +5,11 @@ import os
 import argparse
 
 from dailyai.pipeline.pipeline import Pipeline
-from dailyai.pipeline.frames import EndPipeFrame, LLMMessagesFrame
+from dailyai.pipeline.frames import EndPipeFrame, LLMMessagesFrame, SendAppMessageFrame
 from dailyai.pipeline.aggregators import (
     UserResponseAggregator,
     LLMResponseAggregator,
+    LLMAssistantContextAggregator
 )
 from dailyai.transports.daily_transport import DailyTransport
 from dailyai.services.elevenlabs_ai_service import ElevenLabsTTSService
@@ -17,7 +18,7 @@ from dailyai.services.open_ai_services import OpenAILLMService
 from services.fal import FalImageGenService
 from services.groq import GroqLLMService
 from processors import StoryProcessor, StoryImageProcessor
-from prompts import LLM_BASE_PROMPT
+from prompts import LLM_BASE_PROMPT, LLM_INTRO_PROMPT, CUE_USER_TURN
 
 
 from dotenv import load_dotenv
@@ -68,8 +69,7 @@ async def main(room_url, token=None):
             image_size={
                 "width": 768,
                 "height": 768
-            },
-            expand_prompt=True,
+            }
         )
 
         fal_service = FalImageGenService(
@@ -91,7 +91,6 @@ async def main(room_url, token=None):
         story_pages = []
 
         # We need aggregators to keep track of user and LLM responses
-
         llm_responses = LLMResponseAggregator(message_history)
         user_responses = UserResponseAggregator(message_history)
 
@@ -100,7 +99,6 @@ async def main(room_url, token=None):
         story_processor = StoryProcessor(message_history, story_pages)
         image_processor = StoryImageProcessor(
             groq_service, fal_service, story_pages)
-        # image_prompt_logger = ImagePromptLogger()
 
         # -------------- Story Loop ------------- #
 
@@ -119,18 +117,18 @@ async def main(room_url, token=None):
             await start_storytime_event.wait()
 
             # The intro pipeline is used to start
-            # the story (as per LLM_BASE_PROMPT)
+            # the story (as per LLM_INTRO_PROMPT)
+            lca = LLMAssistantContextAggregator(message_history)
             intro_pipeline = Pipeline(processors=[
                 llm_service,
-                story_processor,
-                image_processor,
+                lca,
                 tts_service,
-                llm_responses,
             ], sink=transport.send_queue)
 
             await intro_pipeline.queue_frames(
                 [
-                    LLMMessagesFrame(message_history),
+                    LLMMessagesFrame([LLM_INTRO_PROMPT]),
+                    SendAppMessageFrame(CUE_USER_TURN, None),
                     EndPipeFrame(),
                 ]
             )

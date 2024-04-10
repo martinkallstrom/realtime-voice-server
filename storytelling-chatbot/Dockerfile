@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM python:3.11-bullseye
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG USE_PERSISTENT_DATA
@@ -26,13 +26,15 @@ RUN apt-get update && apt-get install nodejs -y
 
 # Set up a new user named "user" with user ID 1000
 RUN useradd -m -u 1000 user
-# Switch to the "user" user
-USER user
+
 # Set home to the user's home directory
 ENV HOME=/home/user \
     PATH=/home/user/.local/bin:$PATH \
     PYTHONPATH=$HOME/app \
     PYTHONUNBUFFERED=1
+
+# Switch to the "user" user
+USER user
 
 # Set the working directory to the user's home directory
 WORKDIR $HOME/app

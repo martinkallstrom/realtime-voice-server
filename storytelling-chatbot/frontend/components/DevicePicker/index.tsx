@@ -45,7 +45,7 @@ export default function DevicePicker({
       "loaded",
     ];
     if (meetingStatesBeforeJoin.includes(meetingState)) {
-      daily.startCamera({ startVideoOff: true, startAudioOff: false });
+      daily.startCamera({ startVideoOff: true, startAudioOff: true });
     }
   }, [daily, microphones]);
 
