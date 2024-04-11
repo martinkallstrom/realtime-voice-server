@@ -79,8 +79,7 @@ async def main(room_url, token=None):
             aiohttp_session=session,
             model="fal-ai/fast-lightning-sdxl",
             params=fal_service_params,
-            key_id=os.getenv("FAL_KEY_ID"),
-            key_secret=os.getenv("FAL_KEY_SECRET"),
+            key=os.getenv("FAL_KEY"),
         )
 
         groq_service = GroqLLMService(
