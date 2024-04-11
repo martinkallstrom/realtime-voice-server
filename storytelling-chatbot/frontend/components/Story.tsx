@@ -5,11 +5,12 @@ import {
   useAppMessage,
   DailyAudio,
 } from "@daily-co/daily-react";
+import { IconLogout, IconLoader2 } from "@tabler/icons-react";
+
 import VideoTile from "@/components/VideoTile";
 import { Button } from "@/components/ui/button";
-import WaveText from "@/components//WaveText";
 import UserInputIndicator from "@/components/UserInputIndicator";
-import { IconLogout } from "@tabler/icons-react";
+import WaveText from "@/components//WaveText";
 
 interface StoryProps {
   handleLeave: () => void;
@@ -24,14 +25,9 @@ const Story: React.FC<StoryProps> = ({ handleLeave }) => {
 
   useAppMessage({
     onAppMessage: (e) => {
-      if (!daily) return;
+      if (!daily || !e.data?.cue) return;
 
-      /*if (e.fromId === "transcription") {
-        console.log(e.data?.text);
-      }*/
-
-      if (!e.data?.cue) return;
-
+      // Determine the UI state from the cue sent by the bot
       if (e.data?.cue === "user_turn") {
         daily.setLocalAudio(true);
         setStoryState("user");
@@ -44,10 +40,10 @@ const Story: React.FC<StoryProps> = ({ handleLeave }) => {
 
   return (
     <div className="w-full flex flex-col flex-1 self-stretch">
+      {/* Absolute elements */}
       <div className="absolute top-20 w-full text-center z-50">
         <WaveText active={storyState === "user"} />
       </div>
-
       <header className="flex absolute top-0 w-full z-50 p-6 justify-end">
         <Button variant="secondary" onClick={() => handleLeave()}>
           <IconLogout size={21} className="mr-2" />
@@ -56,13 +52,18 @@ const Story: React.FC<StoryProps> = ({ handleLeave }) => {
       </header>
       <div className="absolute inset-0 bg-gray-800 bg-opacity-90 z-10 fade-in"></div>
 
+      {/* Static elements */}
+
       <div className="relative z-20 flex-1 flex items-center justify-center">
-        {participantIds.length ? (
+        {participantIds.length >= 1 ? (
           <VideoTile sessionId={participantIds[0]} />
         ) : (
-          <div>Loading</div>
+          <IconLoader2
+            size={42}
+            stroke={2}
+            className="animate-spin text-white z-20 self-center"
+          />
         )}
-
         <DailyAudio />
       </div>
       <UserInputIndicator active={storyState === "user"} />
