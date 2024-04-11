@@ -7,7 +7,6 @@ from PIL import Image
 from typing import AsyncGenerator
 
 from dailyai.pipeline.aggregators import (
-    LLMAssistantResponseAggregator,
     LLMUserResponseAggregator,
     ParallelPipeline,
     VisionImageFrameAggregator,
@@ -25,6 +24,7 @@ from dailyai.pipeline.frames import (
     UserImageFrame,
     UserImageRequestFrame,
 )
+from dailyai.services.ai_services import FrameLogger
 from dailyai.services.moondream_ai_service import MoondreamService
 from dailyai.pipeline.pipeline import FrameProcessor, Pipeline
 from dailyai.transports.daily_transport import DailyTransport
@@ -166,6 +166,8 @@ async def main(room_url: str, token):
             api_key=os.getenv("OPENAI_API_KEY"),
             model="gpt-4-turbo-preview")
 
+        fl = FrameLogger()
+
         ta = TalkingAnimation()
         ai = AnimationInitializer()
 
@@ -186,13 +188,12 @@ async def main(room_url: str, token):
         ]
 
         ura = LLMUserResponseAggregator(messages)
-        lra = LLMAssistantResponseAggregator(messages)
 
         pipeline = Pipeline([
             ai, ura, llm, ParallelPipeline(
                 [[sa, ir, va, moondream], [tf, imgf]]
             ),
-            tts, lra, ta
+            tts, fl, ta
         ])
 
         @transport.event_handler("on_first_other_participant_joined")
