@@ -24,7 +24,6 @@ from dailyai.pipeline.frames import (
     UserImageFrame,
     UserImageRequestFrame,
 )
-from dailyai.services.ai_services import FrameLogger
 from dailyai.services.moondream_ai_service import MoondreamService
 from dailyai.pipeline.pipeline import FrameProcessor, Pipeline
 from dailyai.transports.daily_transport import DailyTransport
@@ -166,8 +165,6 @@ async def main(room_url: str, token):
             api_key=os.getenv("OPENAI_API_KEY"),
             model="gpt-4-turbo-preview")
 
-        fl = FrameLogger()
-
         ta = TalkingAnimation()
         ai = AnimationInitializer()
 
@@ -183,7 +180,7 @@ async def main(room_url: str, token):
         messages = [
             {
                 "role": "system",
-                "content": f"You are Chatbot, a friendly, helpful robot. Always let the user know that you are capable of chatting or describing what you see. If the user wants to chat your goal is to demonstrate your capabilities in a succinct way. If the user wants to describe what you see only reply with '{user_request_answer}''. Your output will be converted to audio so don't include special characters in your answers. Respond to what the user said in a creative and helpful way, but keep your responses brief. Start by introducing yourself.",
+                "content": f"You are Chatbot, a friendly, helpful robot. Always let the user know that you are capable of chatting or describing what you see. If the user asks a generic question your goal is to demonstrate your capabilities in a succinct way. If the user only asks you to describe what you see you need to reply with only '{user_request_answer}''. Your output will be converted to audio so don't include special characters in your answers. Respond to what the user said in a creative and helpful way, but keep your responses brief. Start by introducing yourself.",
             },
         ]
 
@@ -193,7 +190,7 @@ async def main(room_url: str, token):
             ai, ura, llm, ParallelPipeline(
                 [[sa, ir, va, moondream], [tf, imgf]]
             ),
-            tts, fl, ta
+            tts, ta
         ])
 
         @transport.event_handler("on_first_other_participant_joined")
