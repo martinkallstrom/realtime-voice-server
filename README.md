@@ -14,11 +14,7 @@ We recommend you start with a virtual environment:
 ```shell
 python -m venv venv
 
-# Mac / Linux:
 source venv/bin/activate
-
-# Windows:
-source venv/Scripts/Activate
 
 cd simple-chatbot
 
@@ -27,7 +23,7 @@ pip install -r requirements.txt
 
 Next, follow the steps in the README for each demo.
 
-Note: make sure you `pip install -r requirements.txt` for each demo project, so you can be sure to have the necessary service dependencies that extend the functionality of Daily AI. You can read more about the framework architecture [here](https://github.com/daily-co/dailyai?tab=readme-ov-file#getting-started).
+ℹ️ Make sure you `pip install -r requirements.txt` for each demo project, so you can be sure to have the necessary service dependencies that extend the functionality of Daily AI. You can read more about the framework architecture [here](https://github.com/daily-co/dailyai?tab=readme-ov-file#getting-started).
 
 ## Projects:
 
@@ -78,7 +74,7 @@ We're using FastAPI to spawn a subprocess for the bots / agents &mdash; useful f
 
 Creating virualized worker pools and on-demand instances is out of scope for these examples, but we have shared various implementation ideas [here](https://daily-co.github.io/dailyai-docs/docs/deploying-your-bot).
 
-For projects that have Cuda as a requirement, such as Moondream Chatbot, be sure to deploy to a GPU-powered platform (such as [fly.io](https://fly.io) or [Runpod](https://runpod.io).)
+For projects that have CUDA as a requirement, such as Moondream Chatbot, be sure to deploy to a GPU-powered platform (such as [fly.io](https://fly.io) or [Runpod](https://runpod.io).)
 
 ### What is VAD?
 
