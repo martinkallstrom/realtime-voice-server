@@ -2,4 +2,4 @@ python-dotenv
 requests
 fastapi[all]
 uvicorn
-dailyai[daily,openai,silero]
+dailyai[daily,moondream,openai,silero]

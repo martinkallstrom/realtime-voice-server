@@ -1,4 +1,5 @@
 import asyncio
+
 import aiohttp
 import logging
 import os
@@ -8,6 +9,9 @@ from typing import AsyncGenerator
 from dailyai.pipeline.aggregators import (
     LLMAssistantResponseAggregator,
     LLMUserResponseAggregator,
+    ParallelPipeline,
+    VisionImageFrameAggregator,
+    SentenceAggregator
 )
 from dailyai.pipeline.frames import (
     ImageFrame,
@@ -17,9 +21,12 @@ from dailyai.pipeline.frames import (
     AudioFrame,
     PipelineStartedFrame,
     TTSEndFrame,
+    TextFrame,
+    UserImageFrame,
+    UserImageRequestFrame,
 )
-from dailyai.services.ai_services import AIService
-from dailyai.pipeline.pipeline import Pipeline
+from dailyai.services.moondream_ai_service import MoondreamService
+from dailyai.pipeline.pipeline import FrameProcessor, Pipeline
 from dailyai.transports.daily_transport import DailyTransport
 from dailyai.services.open_ai_services import OpenAILLMService
 from dailyai.services.elevenlabs_ai_service import ElevenLabsTTSService
@@ -32,6 +39,8 @@ load_dotenv(override=True)
 logging.basicConfig(format=f"%(levelno)s %(asctime)s %(message)s")
 logger = logging.getLogger("dailyai")
 logger.setLevel(logging.DEBUG)
+
+user_request_answer = "Let me take a look."
 
 sprites = []
 
@@ -53,7 +62,7 @@ quiet_frame = ImageFrame(sprites[0], (1024, 576))
 talking_frame = SpriteFrame(images=sprites)
 
 
-class TalkingAnimation(AIService):
+class TalkingAnimation(FrameProcessor):
     """
     This class starts a talking animation when it receives an first AudioFrame,
     and then returns to a "quiet" sprite when it sees a LLMResponseEndFrame.
@@ -79,7 +88,7 @@ class TalkingAnimation(AIService):
             yield frame
 
 
-class AnimationInitializer(AIService):
+class AnimationInitializer(FrameProcessor):
     def __init__(self):
         super().__init__()
 
@@ -91,12 +100,51 @@ class AnimationInitializer(AIService):
             yield frame
 
 
+class UserImageRequester(FrameProcessor):
+    participant_id: str | None
+
+    def __init__(self):
+        super().__init__()
+        self.participant_id = None
+
+    def set_participant_id(self, participant_id: str):
+        self.participant_id = participant_id
+
+    async def process_frame(self, frame: Frame) -> AsyncGenerator[Frame, None]:
+        if self.participant_id and isinstance(frame, TextFrame):
+            if frame.text == user_request_answer:
+                yield UserImageRequestFrame(self.participant_id)
+                yield frame
+        elif isinstance(frame, UserImageFrame):
+            yield frame
+
+
+class TextFilterProcessor(FrameProcessor):
+    text: str
+
+    def __init__(self, text: str):
+        self.text = text
+
+    async def process_frame(self, frame: Frame) -> AsyncGenerator[Frame, None]:
+        if isinstance(frame, TextFrame):
+            if frame.text != self.text:
+                yield frame
+        else:
+            yield frame
+
+
+class ImageFilterProcessor(FrameProcessor):
+    async def process_frame(self, frame: Frame) -> AsyncGenerator[Frame, None]:
+        if not isinstance(frame, ImageFrame):
+            yield frame
+
+
 async def main(room_url: str, token):
     async with aiohttp.ClientSession() as session:
         transport = DailyTransport(
             room_url,
             token,
-            "Chatbot",
+            "Moonbot",
             duration_minutes=5,
             start_transcription=True,
             mic_enabled=True,
@@ -105,6 +153,7 @@ async def main(room_url: str, token):
             camera_width=1024,
             camera_height=576,
             vad_enabled=True,
+            video_rendering_enabled=True
         )
 
         tts = ElevenLabsTTSService(
@@ -119,17 +168,34 @@ async def main(room_url: str, token):
 
         ta = TalkingAnimation()
         ai = AnimationInitializer()
-        pipeline = Pipeline([ai, llm, tts, ta])
+
+        sa = SentenceAggregator()
+        ir = UserImageRequester()
+        va = VisionImageFrameAggregator()
+        moondream = MoondreamService()
+
+        tf = TextFilterProcessor(user_request_answer)
+        imgf = ImageFilterProcessor()
+
+        pipeline = Pipeline([
+            ai, llm, ParallelPipeline(
+                [[sa, ir, va, moondream], [tf, imgf]]
+            ),
+            tts,
+            ta
+        ])
+
         messages = [
             {
                 "role": "system",
-                "content": "You are Chatbot, a friendly, helpful robot. Your goal is to demonstrate your capabilities in a succinct way. Your output will be converted to audio so don't include special characters in your answers. Respond to what the user said in a creative and helpful way, but keep your responses brief. Start by introducing yourself.",
+                "content": f"You are Moonbot, a friendly, helpful robot. Always let the user know that you are capable of chatting or describing what you see. If the user wants to chat your goal is to demonstrate your capabilities in a succinct way. If the user wants to describe what you see only reply with '{user_request_answer}''. Your output will be converted to audio so don't include special characters in your answers. Respond to what the user said in a creative and helpful way, but keep your responses brief. Start by introducing yourself.",
             },
         ]
 
         @transport.event_handler("on_first_other_participant_joined")
         async def on_first_other_participant_joined(transport, participant):
-            print(f"!!! in here, pipeline.source is {pipeline.source}")
+            transport.render_participant_video(participant["id"], framerate=0)
+            ir.set_participant_id(participant["id"])
             await pipeline.queue_frames([LLMMessagesFrame(messages)])
 
         async def run_conversation():
