@@ -7,7 +7,6 @@ from PIL import Image
 from typing import AsyncGenerator
 
 from dailyai.pipeline.aggregators import (
-    LLMAssistantResponseAggregator,
     LLMUserResponseAggregator,
     ParallelPipeline,
     VisionImageFrameAggregator,
@@ -114,7 +113,7 @@ class UserImageRequester(FrameProcessor):
         if self.participant_id and isinstance(frame, TextFrame):
             if frame.text == user_request_answer:
                 yield UserImageRequestFrame(self.participant_id)
-                yield frame
+                yield TextFrame("Describe the image in a short sentence.")
         elif isinstance(frame, UserImageFrame):
             yield frame
 
@@ -144,7 +143,7 @@ async def main(room_url: str, token):
         transport = DailyTransport(
             room_url,
             token,
-            "Moonbot",
+            "Chatbot",
             duration_minutes=5,
             start_transcription=True,
             mic_enabled=True,
@@ -172,25 +171,27 @@ async def main(room_url: str, token):
         sa = SentenceAggregator()
         ir = UserImageRequester()
         va = VisionImageFrameAggregator()
+        # If you run into weird description, try with use_cpu=True
         moondream = MoondreamService()
 
         tf = TextFilterProcessor(user_request_answer)
         imgf = ImageFilterProcessor()
 
-        pipeline = Pipeline([
-            ai, llm, ParallelPipeline(
-                [[sa, ir, va, moondream], [tf, imgf]]
-            ),
-            tts,
-            ta
-        ])
-
         messages = [
             {
                 "role": "system",
-                "content": f"You are Moonbot, a friendly, helpful robot. Always let the user know that you are capable of chatting or describing what you see. If the user wants to chat your goal is to demonstrate your capabilities in a succinct way. If the user wants to describe what you see only reply with '{user_request_answer}''. Your output will be converted to audio so don't include special characters in your answers. Respond to what the user said in a creative and helpful way, but keep your responses brief. Start by introducing yourself.",
+                "content": f"You are Chatbot, a friendly, helpful robot. Always let the user know that you are capable of chatting or describing what you see. If the user asks a generic question your goal is to demonstrate your capabilities in a succinct way. If the user only asks you to describe what you see you need to reply with only '{user_request_answer}''. Your output will be converted to audio so don't include special characters in your answers. Respond to what the user said in a creative and helpful way, but keep your responses brief. Start by introducing yourself.",
             },
         ]
+
+        ura = LLMUserResponseAggregator(messages)
+
+        pipeline = Pipeline([
+            ai, ura, llm, ParallelPipeline(
+                [[sa, ir, va, moondream], [tf, imgf]]
+            ),
+            tts, ta
+        ])
 
         @transport.event_handler("on_first_other_participant_joined")
         async def on_first_other_participant_joined(transport, participant):
@@ -198,17 +199,10 @@ async def main(room_url: str, token):
             ir.set_participant_id(participant["id"])
             await pipeline.queue_frames([LLMMessagesFrame(messages)])
 
-        async def run_conversation():
-
-            await transport.run_interruptible_pipeline(
-                pipeline,
-                post_processor=LLMAssistantResponseAggregator(messages),
-                pre_processor=LLMUserResponseAggregator(messages),
-            )
-
         transport.transcription_settings["extra"]["endpointing"] = True
         transport.transcription_settings["extra"]["punctuate"] = True
-        await asyncio.gather(transport.run(), run_conversation())
+
+        await asyncio.gather(transport.run(pipeline))
 
 
 if __name__ == "__main__":
