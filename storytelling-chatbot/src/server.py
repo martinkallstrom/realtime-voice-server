@@ -71,7 +71,8 @@ async def start_agent(request: Request) -> JSONResponse:
     room_url = data.get('room_url')
     if not room_url:
         raise HTTPException(
-            status_code=500, detail="Missing 'room' property in request data. Cannot start agent without a target room!")
+            status_code=500,
+            detail="Missing 'room' property in request data. Cannot start agent without a target room!")
 
     # Check if there is already an existing process running in this room
     num_bots_in_room = sum(
@@ -145,7 +146,7 @@ async def catch_all(path_name: Optional[str] = ""):
 if __name__ == "__main__":
     # Check environment variables
     required_env_vars = ['OPENAI_API_KEY', 'GROQ_API_KEY', 'DAILY_API_KEY',
-                         'FAL_KEY_SECRET', 'FAL_KEY_ID', 'ELEVENLABS_VOICE_ID', 'ELEVENLABS_API_KEY']
+                         'FAL_KEY', 'ELEVENLABS_VOICE_ID', 'ELEVENLABS_API_KEY']
     for env_var in required_env_vars:
         if env_var not in os.environ:
             raise Exception(f"Missing environment variable: {env_var}.")
