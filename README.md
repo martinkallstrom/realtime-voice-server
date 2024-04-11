@@ -35,8 +35,9 @@ Note: make sure you `pip install -r requirements.txt` for each demo project, so 
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
 | [Simple Chatbot](simple-chatbot)             | Basic voice-driven conversational bot. A good starting point for learning the flow of the framework.                                       | Deepgram, OpenAI, Daily Prebuilt UI                   |
 | [Storytelling Chatbot](storytelling-chatbot) | Stitches together multiple third-party services to create a collaborative storytime experience.                                            | Deepgram, ElevenLabs, Anthropic, Groq, Fal, Custom UI |
-| [Translation Chatbot](translation-chatbot)   | Listens for user speech, then translates that speech to Spanish and speaks the translation back. Demonstrates multi-participant use-cases. | Deepgram, Azure, OpenAI, Daily Prebuilt               |
-| [Moondream Chatbot](moondream-chatbot)       | Demonstrates how to add vision capabilities to GPT4. **Note: works best with a GPU**                                                       | Deepgram,OpenAI, Moondream, Daily Prebuilt            |
+| [Translation Chatbot](translation-chatbot)   | Listens for user speech, then translates that speech to Spanish and speaks the translation back. Demonstrates multi-participant use-cases. | Deepgram, Azure, OpenAI, Daily Prebuilt UI            |
+| [Moondream Chatbot](moondream-chatbot)       | Demonstrates how to add vision capabilities to GPT4. **Note: works best with a GPU**                                                       | Deepgram, OpenAI, Moondream, Daily Prebuilt UI        |
+| Function-calling Chatbot (WIP)               | A chatbot that can call functions in response to user input                                                                                | Deepgram, OpenAI, Fireworks, Daily Prebuilt UI        |
 
 > [!IMPORTANT]
 > Daily Prebuilt is a hosted video calling UI.
@@ -46,8 +47,6 @@ Note: make sure you `pip install -r requirements.txt` for each demo project, so 
 ## Other demos:
 
 The Daily AI repo has a wide array of feature-specific demos and foundational examples, you can [find them here](https://github.com/daily-co/dailyai/tree/main/examples).
-
----
 
 ## FAQ
 
