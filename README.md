@@ -20,7 +20,7 @@ source venv/bin/activate
 # Windows:
 source venv/Scripts/Activate
 
-cd chatbot
+cd simple-chatbot
 
 pip install -r requirements.txt
 ```
@@ -33,7 +33,7 @@ Note: make sure you `pip install -r requirements.txt` for each demo project, so 
 
 | Project                                      | Description                                                                                                                                | Services                                              |
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
-| [Simple Chatbot](chatbot)                    | Basic voice-driven conversational bot. A good starting point for learning the flow of the framework.                                       | Deepgram, OpenAI, Daily Prebuilt UI                   |
+| [Simple Chatbot](simple-chatbot)             | Basic voice-driven conversational bot. A good starting point for learning the flow of the framework.                                       | Deepgram, OpenAI, Daily Prebuilt UI                   |
 | [Storytelling Chatbot](storytelling-chatbot) | Stitches together multiple third-party services to create a collaborative storytime experience.                                            | Deepgram, ElevenLabs, Anthropic, Groq, Fal, Custom UI |
 | [Translation Chatbot](translation-chatbot)   | Listens for user speech, then translates that speech to Spanish and speaks the translation back. Demonstrates multi-participant use-cases. | Deepgram, Azure, OpenAI, Daily Prebuilt               |
 | [Moondream Chatbot](moondream-chatbot)       | Demonstrates how to add vision capabilities to GPT4. **Note: works best with a GPU**                                                       | Deepgram,OpenAI, Moondream, Daily Prebuilt            |
