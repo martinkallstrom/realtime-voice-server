@@ -1,131 +1,109 @@
-# Daily AI examples
+[![PyPI](https://img.shields.io/pypi/v/dailyai)](https://pypi.org/project/dailyai)
+[![PyPI](https://img.shields.io/badge/docs-docusaurus)](https://daily-co.github.io/dailyai-docs/docs/intro)
 
-Collection of self-contained real-time AI demo applications built with [dailyai](https://github.com/daily-co/dailyai/)
+# Daily AI &mdash; Examples
 
-(... intro text here)
-
-https://daily-co.github.io/dailyai-docs/docs/intro
-
----
+Collection of self-contained real-time voice and video AI demo applications built with [dailyai](https://github.com/daily-co/dailyai/).
 
 ## Quickstart
 
-Each demo is a standalone project with its own set of dependencies and configuration variables. This repo intentionally avoids shared code across projects &mdash; you can grab whichever demo folder you want to work with as a starting point.
+Each project has its own set of dependencies and configuration variables. This repo intentionally avoids shared code across projects &mdash; you can grab whichever demo folder you want to work with as a starting point.
 
 We recommend you start with a virtual environment:
 
-```
+```shell
 python -m venv venv
 
-# Mac / Linux:
 source venv/bin/activate
 
-# Windows:
-source venv/Scripts/Activate
+cd simple-chatbot
+
+pip install -r requirements.txt
 ```
 
 Next, follow the steps in the README for each demo.
 
-Note: make sure you `pip install -r requirements.txt` for each demo project, so you can be sure to have the necessary service dependencies that extend the functionality of Daily AI. You can read more about the framework architecture [here](https://github.com/daily-co/dailyai?tab=readme-ov-file#getting-started).
+ℹ️ Make sure you `pip install -r requirements.txt` for each demo project, so you can be sure to have the necessary service dependencies that extend the functionality of Daily AI. You can read more about the framework architecture [here](https://github.com/daily-co/dailyai?tab=readme-ov-file#getting-started).
 
----
+## Projects:
 
-## Demos:
+| Project                                      | Description                                                                                                                                | Services                                              |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
+| [Simple Chatbot](simple-chatbot)             | Basic voice-driven conversational bot. A good starting point for learning the flow of the framework.                                       | Deepgram, OpenAI, Daily Prebuilt UI                   |
+| [Storytelling Chatbot](storytelling-chatbot) | Stitches together multiple third-party services to create a collaborative storytime experience.                                            | Deepgram, ElevenLabs, Anthropic, Groq, Fal, Custom UI |
+| [Translation Chatbot](translation-chatbot)   | Listens for user speech, then translates that speech to Spanish and speaks the translation back. Demonstrates multi-participant use-cases. | Deepgram, Azure, OpenAI, Daily Prebuilt UI            |
+| [Moondream Chatbot](moondream-chatbot)       | Demonstrates how to add vision capabilities to GPT4. **Note: works best with a GPU**                                                       | Deepgram, OpenAI, Moondream, Daily Prebuilt UI        |
+| Function-calling Chatbot (WIP)               | A chatbot that can call functions in response to user input                                                                                | Deepgram, OpenAI, Fireworks, Daily Prebuilt UI        |
 
-### Simple Chat Bot (CPU)
-
-[ image ]
-
-Your basic voice-driven conversational bot
-
-- Text-to-Speech: DeepGram
-- Speech-to-Text: DeepGram
-- LLM: OpenAI
-- UI: Daily Prebuilt
-
-### Translation Bot (CPU)
-
-[ image ]
-
-Real-time language translation with an emphasis on latency.
-
-- Text-to-Speech: DeepGram
-- Speech-to-Text: Azure
-- LLM: Groq (Mixtral)
-- UI: Custom
-
-### Storytelling Bot (CPU)
-
-[ image ]
-
-Stitches together multiple third-party services to create a fun and collaborative storytime experience.
-
-- Text-to-Speech: DeepGram
-- Speech-to-Text: Eleven Labs
-- LLM: Claude3 (Anthropic)
-- Image Generation: Fal.ai
-- UI: Custom
-
-### Tool-calling Bot (CPU)
-
-[ image ]
-
-Process-driven workflow that demonstrates how to trigger various tools throughout the conversation (a great starting point for customer service bots!)
-
-- Text-to-Speech: DeepGram
-- Speech-to-Text: Eleven Labs
-- LLM: Fireworks
-- UI: Daily Prebuilt
+> [!IMPORTANT]
+> Daily Prebuilt is a hosted video calling UI.
+> Any real-time session using Daily as a WebRTC transport can be joined using Daily Prebuilt.
+> It provides a quick way to join a real-time session with your bot and test your ideas without building any frontend code.
 
 ## Other demos:
 
-#### Chat Bot with Silero VAD (GPU)
+The Daily AI repo has a wide array of feature-specific demos and foundational examples, you can [find them here](https://github.com/daily-co/dailyai/tree/main/examples).
 
-[ image ]
+## FAQ
 
-By default the Daily AI framework uses a CPU-bound version of VAD (voice activity detection.) If your agent targets hardware-capable machines with CUDA support, it's possible to infer from trained models for greater accuracy.
+### Deployment
 
-#### Moondream Vision Bot (GPU)
+For each of these demos we've included a `Dockerfile`. Out of the box, this should provide everything needed to get the respective demo running on a VM:
 
-[ image ]
+```shell
+docker build username/app:tag .
 
-...
+docker run -p 7860:7860 --env-file ./.env username/app:tag
 
----
+docker push ...
+```
 
-## What is Daily, do I need it to run my bots?
+### SSL
 
-...
+If you're working with a custom UI (such as with the Storytelling Chatbot), it's important to ensure your deployment platform supports HTTPS, as accessing user devices such as mics and webcams requires SSL.
 
-### What is Daily Prebuilt?
+If you try to run a custom UI without SSL, you may see an error in the console telling you that `navigator` is undefined, or no devices are available.
 
-To get up and running with your bots quickly, you can make use of Daily's hosted user interface for real-time video and audio calls. Daily Prebuilt will allow you to join any room on your domain via a URL, for example: `https://[your-domains].daily.co/[room_name]`.
+### Are these examples production ready?
 
-Daily Prebuilt has been designed as a fully-featured video calling experience, and whilst it may not fit every bot use-case, it can definitely serve as a helpful debugging tool or method for avoiding building your own frontend.
+Yes, kind of.
 
----
+These demos attempt to keep things simple and are unopinionated regarding environment or scalability.
 
-## Deployment
+We're using FastAPI to spawn a subprocess for the bots / agents &mdash; useful for small tests, but not so great for production grade apps with many concurrent users. You can see how this works in each projects `start` endpoint in `server.py`.
 
-`docker run -p 7860:7860 --env-file ./.env user/app:tag`
+Creating virualized worker pools and on-demand instances is out of scope for these examples, but we have shared various implementation ideas [here](https://daily-co.github.io/dailyai-docs/docs/deploying-your-bot).
 
-For each of these demos we've included a `Dockerfile`. Out of the box, this should provide everything needed to get the respective demo running on a VM.
+For projects that have CUDA as a requirement, such as Moondream Chatbot, be sure to deploy to a GPU-powered platform (such as [fly.io](https://fly.io) or [Runpod](https://runpod.io).)
 
-There is a typical pattern that we've found works best for managing and spawning Daily AI agents:
+### What is VAD?
 
-[ diagram of agent spawning flow ]
+Voice Activity Detection &mdash; very important for knowing when a user has finished speaking to your bot. If you are not using press-to-talk, and want Daily AI to detect when the user has finished talking, VAD is an essential component for a natural feeling conversation.
 
-Of course, these demos attempt to keep things simple and are unopinionated regarding scalability. When a Daily AI agent is summoned into a session, all we do is run a new subprocess on the same machine instance &mdash; useful for small tests, but not so great for production grade apps with many concurrent users.
+Daily AI makes use of WebRTC VAD by default when using the Daily transport layer. Optionally, you can use Silero VAD for improved accuracy at the cost of higher CPU usage.
 
-Creating virualized worker pools and on-demand instances is out of scope for these examples, but we have shared various implementation ideas here.
+You can enable Silero like so:
 
-#### SSL
+```shell
+pip install dailyai[silero]
+```
 
-`docker build --build-arg USE_LETSENCRYPT=1 username/app:tag .`
-...
+Installing Silero will override the default VAD implementation, which can be manually toggled on and off like so:
 
----
+```py
+transport = DailyTransport(
+    room_url,
+    token,
+    "Bot Name",
+    ...
+    vad_enabled=True #Note: True by default
+)
+```
+
+The first time your run your bot with Silero, startup may take a while whilst it downloads and caches the model in the background. You can check the progress of this in the console.
 
 ## Getting help
 
-...
+➡️ [Join our Discord](https://discord.gg/dailyai)
+
+➡️ [Reach us on Twitter](https://x.com/trydaily)
