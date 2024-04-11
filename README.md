@@ -1,13 +1,13 @@
 [![PyPI](https://img.shields.io/pypi/v/dailyai)](https://pypi.org/project/dailyai)
 [![PyPI](https://img.shields.io/badge/docs-docusaurus)](https://daily-co.github.io/dailyai-docs/docs/intro)
 
-# Daily AI Examples
+# Daily AI &mdash; Examples
 
 Collection of self-contained real-time voice and video AI demo applications built with [dailyai](https://github.com/daily-co/dailyai/).
 
 ## Quickstart
 
-Each project has a set of dependencies and configuration variables. This repo intentionally avoids shared code across projects &mdash; you can grab whichever demo folder you want to work with as a starting point.
+Each project has its own set of dependencies and configuration variables. This repo intentionally avoids shared code across projects &mdash; you can grab whichever demo folder you want to work with as a starting point.
 
 We recommend you start with a virtual environment:
 
@@ -40,12 +40,12 @@ Note: make sure you `pip install -r requirements.txt` for each demo project, so 
 
 > [!IMPORTANT]
 > Daily Prebuilt is a hosted video calling UI.
-> Any real-time session powered by Daily can be joined using Daily Prebuilt
+> Any real-time session using Daily as a WebRTC transport can be joined using Daily Prebuilt
 > It provides a quick way to test your ideas, without building any frontend code
 
 ## Other demos:
 
-The Daily AI repo has a wide array of feature demos [found here](https://github.com/daily-co/dailyai/tree/main/examples)
+The Daily AI repo has a wide array of feature-specific demos and foundational examples, you can [find them here](https://github.com/daily-co/dailyai/tree/main/examples).
 
 ---
 
@@ -53,35 +53,47 @@ The Daily AI repo has a wide array of feature demos [found here](https://github.
 
 ### Deployment
 
-For each of these demos we've included a `Dockerfile`. Out of the box, this should provide everything needed to get the respective demo running on a VM.
+For each of these demos we've included a `Dockerfile`. Out of the box, this should provide everything needed to get the respective demo running on a VM:
 
 ```shell
 docker build username/app:tag .
 
 docker run -p 7860:7860 --env-file ./.env username/app:tag
+
+docker push ...
 ```
 
 ### SSL
 
-If you're working with a custom UI (such as with the Storytelling Chatbot), it's important to ensure your platform supports HTTPS, as accessing user devices such as mics and webcams requires it.
+If you're working with a custom UI (such as with the Storytelling Chatbot), it's important to ensure your deployment platform supports HTTPS, as accessing user devices such as mics and webcams requires SSL.
+
+If you try to run a custom UI without SSL, you may see an error in the console telling you that `navigator` is undefined, or no devices are available.
 
 ### Are these examples production ready?
 
-Yes, and unfortunately no.
+Yes, kind of.
 
-These demos attempt to keep things simple and are unopinionated regarding scalability. We're using FastAPI to spawn a subprocess for the bots / agents &mdash; useful for small tests, but not so great for production grade apps with many concurrent users.
+These demos attempt to keep things simple and are unopinionated regarding environment or scalability.
 
-Creating virualized worker pools and on-demand instances is out of scope for these examples, but we have shared various implementation ideas here.
+We're using FastAPI to spawn a subprocess for the bots / agents &mdash; useful for small tests, but not so great for production grade apps with many concurrent users. You can see how this works in each projects `start` endpoint in `server.py`.
+
+Creating virualized worker pools and on-demand instances is out of scope for these examples, but we have shared various implementation ideas [here](https://daily-co.github.io/dailyai-docs/docs/deploying-your-bot).
+
+For projects that have Cuda as a requirement, such as Moondream Chatbot, be sure to deploy to a GPU-powered platform (such as [fly.io](https://fly.io) or [Runpod](https://runpod.io).)
 
 ### What is VAD?
 
-Voice Activity Detection &mdash; very important for knowing when a user has finished speaking to your bot.
+Voice Activity Detection &mdash; very important for knowing when a user has finished speaking to your bot. If you are not using press-to-talk, and want Daily AI to detect when the user has finished talking, VAD is an essential component for a natural feeling conversation.
 
-Daily AI makes use of WebRTC VAD by default when using the Daily transport layer. Optionally, you can use Silero VAD for improved accuracy at the cost of higher CPU usage. You can enable Silero like so:
+Daily AI makes use of WebRTC VAD by default when using the Daily transport layer. Optionally, you can use Silero VAD for improved accuracy at the cost of higher CPU usage.
+
+You can enable Silero like so:
 
 ```shell
 pip install dailyai[silero]
 ```
+
+Installing Silero will override the default VAD implementation, which can be manually toggled on and off like so:
 
 ```py
 transport = DailyTransport(
@@ -93,7 +105,7 @@ transport = DailyTransport(
 )
 ```
 
-The first time your run your bot with Silero enabled things may take a while to get started as it downloads and caches the model.
+The first time your run your bot with Silero, startup may take a while whilst it downloads and caches the model in the background. You can check the progress of this in the console.
 
 ## Getting help
 
