@@ -40,8 +40,8 @@ Note: make sure you `pip install -r requirements.txt` for each demo project, so 
 
 > [!IMPORTANT]
 > Daily Prebuilt is a hosted video calling UI.
-> Any real-time session using Daily as a WebRTC transport can be joined using Daily Prebuilt
-> It provides a quick way to test your ideas, without building any frontend code
+> Any real-time session using Daily as a WebRTC transport can be joined using Daily Prebuilt.
+> It provides a quick way to join a real-time session with your bot and test your ideas without building any frontend code.
 
 ## Other demos:
 
