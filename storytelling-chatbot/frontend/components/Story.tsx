@@ -10,8 +10,7 @@ import { IconLogout, IconLoader2 } from "@tabler/icons-react";
 import VideoTile from "@/components/VideoTile";
 import { Button } from "@/components/ui/button";
 import UserInputIndicator from "@/components/UserInputIndicator";
-import StoryTranscript from "@/components/StoryTranscript";
-import WaveText from "@/components//WaveText";
+import WaveText from "@/components/WaveText";
 
 interface StoryProps {
   handleLeave: () => void;
@@ -54,16 +53,17 @@ const Story: React.FC<StoryProps> = ({ handleLeave }) => {
       <div className="absolute inset-0 bg-gray-800 bg-opacity-90 z-10 fade-in"></div>
 
       {/* Static elements */}
-      <StoryTranscript />
       <div className="relative z-20 flex-1 flex items-center justify-center">
         {participantIds.length >= 1 ? (
           <VideoTile sessionId={participantIds[0]} />
         ) : (
-          <IconLoader2
-            size={42}
-            stroke={2}
-            className="animate-spin text-white z-20 self-center"
-          />
+          <span className="p-3 rounded-full bg-gray-900/60 animate-pulse">
+            <IconLoader2
+              size={42}
+              stroke={2}
+              className="animate-spin text-white z-20 self-center"
+            />
+          </span>
         )}
         <DailyAudio />
       </div>

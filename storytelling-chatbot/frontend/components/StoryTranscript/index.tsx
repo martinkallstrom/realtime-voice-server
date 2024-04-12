@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-
 import { useAppMessage } from "@daily-co/daily-react";
 import { DailyEventObjectAppMessage } from "@daily-co/daily-js";
 
@@ -40,13 +39,17 @@ export default function StoryTranscript() {
   });
 
   return (
-    <div className="absolute text-white top-0 z-50 text-center max-w-sm mx-auto flex flex-col justify-end content-end h-[300px]">
+    <div className={styles.container}>
       {sentences.map((sentence, index) => (
         <p key={index} className={`${styles.transcript} ${styles.sentence}`}>
-          {sentence}
+          <span>{sentence}</span>
         </p>
       ))}
-      {partialText && <p className={`${styles.transcript}`}>{partialText}</p>}
+      {partialText && (
+        <p className={`${styles.transcript}`}>
+          <span>{partialText}</span>
+        </p>
+      )}
     </div>
   );
 }

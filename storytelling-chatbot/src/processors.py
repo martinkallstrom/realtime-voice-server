@@ -53,15 +53,28 @@ class StoryImageProcessor(FrameProcessor):
     async def process_frame(self, frame: Frame) -> AsyncGenerator[Frame, None]:
         if isinstance(frame, StoryPageFrame):
             yield frame
-            async for f in self._groq_service.run_llm_async([
-                LLM_IMAGE_PROMPT,
-                {
-                    "role": "user",
-                    "content": "".join(self._story)
-                }
-            ]):
-                async for i in self._fal_service.process_frame(TextFrame(IMAGE_GEN_PROMPT % f)):
-                    yield i
+
+            try:
+                async with asyncio.timeout(5):
+                    async for f in self._groq_service.run_llm_async([
+                        LLM_IMAGE_PROMPT,
+                        {
+                            "role": "user",
+                            "content": "".join(self._story)
+                        }
+                    ]):
+                        print("AAAA")
+                        try:
+                            async with asyncio.timeout(5):
+                                async for i in self._fal_service.process_frame(TextFrame(IMAGE_GEN_PROMPT % f)):
+                                    print("BBBB")
+                                    yield i
+                        except TimeoutError:
+                            print("TIMEOUT 2")
+                            pass
+            except TimeoutError:
+                print("TIMEOUT 1")
+                pass
         else:
             yield frame
 

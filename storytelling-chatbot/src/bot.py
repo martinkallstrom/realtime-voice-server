@@ -151,7 +151,7 @@ async def main(room_url, token=None):
                 user_responses,
                 llm_service,
                 story_processor,
-                # image_processor,
+                image_processor,
                 tts_service,
                 llm_responses,
             ])
