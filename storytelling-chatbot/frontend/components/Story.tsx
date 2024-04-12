@@ -29,7 +29,8 @@ const Story: React.FC<StoryProps> = ({ handleLeave }) => {
 
       // Determine the UI state from the cue sent by the bot
       if (e.data?.cue === "user_turn") {
-        daily.setLocalAudio(true);
+        // Delay enabling local mic input to avoid feedback from LLM
+        setTimeout(() => daily.setLocalAudio(true), 500);
         setStoryState("user");
       } else {
         daily.setLocalAudio(false);
