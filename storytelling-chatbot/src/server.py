@@ -145,7 +145,7 @@ async def catch_all(path_name: Optional[str] = ""):
 
 if __name__ == "__main__":
     # Check environment variables
-    required_env_vars = ['OPENAI_API_KEY', 'GROQ_API_KEY', 'DAILY_API_KEY',
+    required_env_vars = ['OPENAI_API_KEY', 'DAILY_API_KEY',
                          'FAL_KEY', 'ELEVENLABS_VOICE_ID', 'ELEVENLABS_API_KEY']
     for env_var in required_env_vars:
         if env_var not in os.environ:
