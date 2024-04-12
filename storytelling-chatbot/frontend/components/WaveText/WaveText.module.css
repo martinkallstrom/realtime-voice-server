@@ -3,6 +3,7 @@
     text-shadow: 3px 3px 0px rgba(0,0,0,0.5);
     opacity: 0;
     transition: opacity 2s ease;
+    position: relative;
     @apply text-4xl font-bold;
 }
 

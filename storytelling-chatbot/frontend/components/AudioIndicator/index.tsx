@@ -35,7 +35,7 @@ export const AudioIndicator: React.FC = () => {
           z-index: 0;
           border-radius: 999px;
           transition: all 0.1s ease;
-          transform: scale(1);
+          transform: scale(0);
         }
       `}</style>
     </>

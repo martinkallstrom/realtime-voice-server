@@ -13,6 +13,7 @@ from dailyai.pipeline.frames import (
 
 from utils.helpers import load_sounds
 from prompts import LLM_IMAGE_PROMPT, IMAGE_GEN_PROMPT, CUE_USER_TURN, CUE_ASSISTANT_TURN
+import asyncio
 
 sounds = load_sounds(["talking.wav", "listening.wav", "ding.wav"])
 
@@ -40,7 +41,8 @@ class StoryImageProcessor(FrameProcessor):
     for further processing. The processed frames are then yielded back.
 
     Attributes:
-        _fal_service (FALService): The FAL service used for processing frames.
+        _groq_service (GROQService): The Groq service, created the image prompt (fast!).
+        _fal_service (FALService): The FAL service, generates the images (fast fast!).
 
     """
 
@@ -51,16 +53,27 @@ class StoryImageProcessor(FrameProcessor):
 
     async def process_frame(self, frame: Frame) -> AsyncGenerator[Frame, None]:
         if isinstance(frame, StoryPageFrame):
-            async for f in self._groq_service.run_llm_async([
-                LLM_IMAGE_PROMPT,
-                {
-                    "role": "user",
-                    "content": "".join(self._story)
-                }
-            ]):
-                async for i in self._fal_service.process_frame(TextFrame(IMAGE_GEN_PROMPT % f)):
-                    yield i
             yield frame
+
+            try:
+                async with asyncio.timeout(5):
+                    async for f in self._groq_service.run_llm_async([
+                        LLM_IMAGE_PROMPT,
+                        {
+                            "role": "user",
+                            "content": "".join(self._story)
+                        }
+                    ]):
+                        try:
+                            async with asyncio.timeout(5):
+                                async for i in self._fal_service.process_frame(TextFrame(IMAGE_GEN_PROMPT % f)):
+                                    yield i
+                        except TimeoutError:
+                            print("TIMEOUT 2")
+                            pass
+            except TimeoutError:
+                print("TIMEOUT 1")
+                pass
         else:
             yield frame
 
@@ -108,18 +121,20 @@ class StoryProcessor(FrameProcessor):
                     # Append the sentence to the story
                     self._story.append(self._text)
                     yield StoryPageFrame(self._text)
+                    # Assert that it's the LLMs turn, until we're finished
+                    yield SendAppMessageFrame(CUE_ASSISTANT_TURN, None)
                 # Clear the buffer
                 self._text = ""
 
         # End of LLM response
         # Driven by the prompt, the LLM should have asked the user for input
         elif isinstance(frame, LLMResponseEndFrame):
-            # Send an app message to the UI
-            yield SendAppMessageFrame(CUE_USER_TURN, None)
             # We use a different frame type, as to avoid image generation ingest
             yield StoryPromptFrame(self._text)
             self._text = ""
             yield frame
+            # Send an app message to the UI
+            yield SendAppMessageFrame(CUE_USER_TURN, None)
             yield AudioFrame(sounds["listening"])
 
         # Anything that is not a TextFrame pass through

@@ -14,6 +14,7 @@ LLM_BASE_PROMPT = {
         Keep all responses short and no more than a few sentences. Include [break] after each sentence of the story. \
         Responses should use the format: story sentence [break] story sentence [break] ... \
         After each response, ask me how I'd like the story to continue and wait for my input. \
+        Please ensure your responses are less than 3-4 sentences long. \
         Please refrain from using any explicit language or content. Do not tell scary stories."
 }
 

@@ -13,11 +13,7 @@ import {
 import { IconMicrophone, IconDeviceSpeaker } from "@tabler/icons-react";
 import { AudioIndicatorBar } from "../AudioIndicator";
 
-interface Props {
-  // color?: string;
-  // errorColor?: string;
-  // label?: React.ReactNode;
-}
+interface Props {}
 
 export default function DevicePicker({}: Props) {
   const daily = useDaily();

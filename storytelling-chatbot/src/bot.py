@@ -5,11 +5,16 @@ import os
 import argparse
 
 from dailyai.pipeline.pipeline import Pipeline
-from dailyai.pipeline.frames import AudioFrame, EndPipeFrame, LLMMessagesFrame, SendAppMessageFrame
+from dailyai.pipeline.frames import (
+    AudioFrame,
+    ImageFrame,
+    EndPipeFrame,
+    LLMMessagesFrame,
+    SendAppMessageFrame
+)
 from dailyai.pipeline.aggregators import (
     LLMUserResponseAggregator,
     LLMAssistantResponseAggregator,
-    LLMAssistantContextAggregator
 )
 from dailyai.transports.daily_transport import DailyTransport
 from dailyai.services.elevenlabs_ai_service import ElevenLabsTTSService
@@ -19,7 +24,7 @@ from dailyai.services.fal_ai_services import FalImageGenService
 from services.groq import GroqLLMService
 from processors import StoryProcessor, StoryImageProcessor
 from prompts import LLM_BASE_PROMPT, LLM_INTRO_PROMPT, CUE_USER_TURN
-from utils.helpers import load_sounds
+from utils.helpers import load_sounds, load_images
 
 from dotenv import load_dotenv
 load_dotenv(override=True)
@@ -30,6 +35,7 @@ logger.setLevel(logging.INFO)
 
 
 sounds = load_sounds(["listening.wav"])
+images = load_images(["book1.png", "book2.png"])
 
 
 async def main(room_url, token=None):
@@ -120,18 +126,18 @@ async def main(room_url, token=None):
 
             # The intro pipeline is used to start
             # the story (as per LLM_INTRO_PROMPT)
-            lca = LLMAssistantContextAggregator(message_history)
             intro_pipeline = Pipeline(processors=[
                 llm_service,
-                lca,
                 tts_service,
             ], sink=transport.send_queue)
 
             await intro_pipeline.queue_frames(
                 [
+                    ImageFrame(images['book1'], (768, 768)),
                     LLMMessagesFrame([LLM_INTRO_PROMPT]),
                     SendAppMessageFrame(CUE_USER_TURN, None),
                     AudioFrame(sounds["listening"]),
+                    ImageFrame(images['book2'], (768, 768)),
                     EndPipeFrame(),
                 ]
             )

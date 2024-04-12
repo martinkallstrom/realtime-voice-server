@@ -22,6 +22,7 @@ const mono = Space_Mono({
 export const metadata: Metadata = {
   title: "Storytelling Chatbot - Daily AI",
   description: "Built with git.new/ai",
+  metadataBase: new URL(process.env.SITE_URL || "http://localhost:3000"),
 };
 
 export default function RootLayout({

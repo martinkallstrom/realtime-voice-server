@@ -40,8 +40,8 @@ app.add_middleware(
 
 # Mount the static directory
 STATIC_DIR = "frontend/out"
-app.mount("/static", StaticFiles(directory=STATIC_DIR,
-          html=True), name="static")
+
+app.mount("/static", StaticFiles(directory=STATIC_DIR, html=True), name="static")
 
 
 @app.post("/create")
@@ -128,7 +128,6 @@ def get_status(pid: int):
 
 @app.get("/{path_name:path}", response_class=FileResponse)
 async def catch_all(path_name: Optional[str] = ""):
-    print(path_name)
     if path_name == "":
         return FileResponse(f"{STATIC_DIR}/index.html")
 

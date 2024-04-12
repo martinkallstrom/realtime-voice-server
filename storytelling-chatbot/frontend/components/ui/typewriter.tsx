@@ -34,7 +34,6 @@ export const TypewriterEffect = ({
         <span>...</span>
       ) : (
         <motion.div
-          key={words.join("")}
           className="overflow-hidden"
           initial={{
             width: "0%",
