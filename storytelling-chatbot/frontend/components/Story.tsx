@@ -55,7 +55,10 @@ const Story: React.FC<StoryProps> = ({ handleLeave }) => {
       {/* Static elements */}
       <div className="relative z-20 flex-1 flex items-center justify-center">
         {participantIds.length >= 1 ? (
-          <VideoTile sessionId={participantIds[0]} />
+          <VideoTile
+            sessionId={participantIds[0]}
+            inactive={storyState === "user"}
+          />
         ) : (
           <span className="p-3 rounded-full bg-gray-900/60 animate-pulse">
             <IconLoader2

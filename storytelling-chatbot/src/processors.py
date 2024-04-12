@@ -41,7 +41,8 @@ class StoryImageProcessor(FrameProcessor):
     for further processing. The processed frames are then yielded back.
 
     Attributes:
-        _fal_service (FALService): The FAL service used for processing frames.
+        _groq_service (GROQService): The Groq service, created the image prompt (fast!).
+        _fal_service (FALService): The FAL service, generates the images (fast fast!).
 
     """
 
@@ -63,11 +64,9 @@ class StoryImageProcessor(FrameProcessor):
                             "content": "".join(self._story)
                         }
                     ]):
-                        print("AAAA")
                         try:
                             async with asyncio.timeout(5):
                                 async for i in self._fal_service.process_frame(TextFrame(IMAGE_GEN_PROMPT % f)):
-                                    print("BBBB")
                                     yield i
                         except TimeoutError:
                             print("TIMEOUT 2")

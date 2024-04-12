@@ -3,9 +3,14 @@ import styles from "./VideoTile.module.css";
 import { DailyVideo } from "@daily-co/daily-react";
 import StoryTranscript from "@/components/StoryTranscript";
 
-const VideoTile = ({ sessionId }) => {
+interface Props {
+  sessionId: string;
+  inactive: boolean;
+}
+
+const VideoTile = ({ sessionId, inactive }: Props) => {
   return (
-    <div className="relative">
+    <div className={`${styles.container} ${inactive ? styles.inactive : ""} `}>
       <StoryTranscript />
 
       <div className={styles.videoTile}>
