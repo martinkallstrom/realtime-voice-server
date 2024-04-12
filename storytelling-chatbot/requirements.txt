@@ -1,8 +1,5 @@
-dailyai[daily,openai,anthropic,fal]==0.0.8
+dailyai[daily,openai,fal]==0.0.8
 fastapi
 uvicorn
 requests
 python-dotenv
-
-# Services
-groq
