@@ -12,7 +12,7 @@ from dailyai.pipeline.frames import (
 )
 
 from utils.helpers import load_sounds
-from prompts import LLM_IMAGE_PROMPT, IMAGE_GEN_PROMPT, CUE_USER_TURN, CUE_ASSISTANT_TURN
+from prompts import IMAGE_GEN_PROMPT, CUE_USER_TURN, CUE_ASSISTANT_TURN
 import asyncio
 
 sounds = load_sounds(["talking.wav", "listening.wav", "ding.wav"])
@@ -22,6 +22,11 @@ sounds = load_sounds(["talking.wav", "listening.wav", "ding.wav"])
 
 class StoryPageFrame(TextFrame):
     # Frame for each sentence in the story before a [break]
+    pass
+
+
+class StoryImageFrame(TextFrame):
+    # Frame for trigger image generation
     pass
 
 
@@ -41,39 +46,23 @@ class StoryImageProcessor(FrameProcessor):
     for further processing. The processed frames are then yielded back.
 
     Attributes:
-        _groq_service (GROQService): The Groq service, created the image prompt (fast!).
         _fal_service (FALService): The FAL service, generates the images (fast fast!).
 
     """
 
-    def __init__(self, groq_service, fal_service, story_pages):
-        self._groq_service = groq_service
+    def __init__(self, fal_service, story_pages):
         self._fal_service = fal_service
         self._story = story_pages
 
     async def process_frame(self, frame: Frame) -> AsyncGenerator[Frame, None]:
-        if isinstance(frame, StoryPageFrame):
-            yield frame
-
+        if isinstance(frame, StoryImageFrame):
             try:
-                async with asyncio.timeout(5):
-                    async for f in self._groq_service.run_llm_async([
-                        LLM_IMAGE_PROMPT,
-                        {
-                            "role": "user",
-                            "content": "".join(self._story)
-                        }
-                    ]):
-                        try:
-                            async with asyncio.timeout(5):
-                                async for i in self._fal_service.process_frame(TextFrame(IMAGE_GEN_PROMPT % f)):
-                                    yield i
-                        except TimeoutError:
-                            print("TIMEOUT 2")
-                            pass
+                async with asyncio.timeout(7):
+                    async for i in self._fal_service.process_frame(TextFrame(IMAGE_GEN_PROMPT % frame.text)):
+                        yield i
             except TimeoutError:
-                print("TIMEOUT 1")
                 pass
+            pass
         else:
             yield frame
 
@@ -107,6 +96,18 @@ class StoryProcessor(FrameProcessor):
             # but since TextFrames are streamed from the LLM
             # we need to keep a buffer of the text we've seen so far
             self._text += frame.text
+
+            # Looking for: < [image prompt] > in the LLM response
+            if re.search(r"<.*?>", self._text):
+                if not re.search(r"<.*?>.*?>", self._text):
+                    # wait until we have a closing bracket before processing the frame
+                    pass
+                # Extract the image prompt from the text using regex
+                image_prompt = re.search(r"<(.*?)>", self._text).group(1)
+                # Remove the image prompt from the text
+                self._text = re.sub(r"<.*?>", '', self._text, count=1)
+                # Process the image prompt frame
+                yield StoryImageFrame(image_prompt)
 
             # Looking for: [break] in the LLM response
             # We prompted our LLM to add a [break] after each sentence

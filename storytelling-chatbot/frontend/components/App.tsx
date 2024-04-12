@@ -23,6 +23,8 @@ export default function Call() {
   async function start() {
     setState("connecting");
 
+    if (!daily) return;
+
     // Create a new room for the story session
     try {
       const response = await fetch("/create", {
@@ -41,7 +43,7 @@ export default function Call() {
       setRoom(room_url);
 
       // Join the WebRTC session
-      await daily?.join({
+      await daily.join({
         url: room_url,
         token,
         videoSource: false,
@@ -49,6 +51,9 @@ export default function Call() {
       });
 
       setState("connected");
+
+      // Disable local audio, the bot will say hello first
+      daily.setLocalAudio(false);
 
       // Start the bot
       const resp = await fetch("/start", {
@@ -64,6 +69,7 @@ export default function Call() {
       setState("started");
     } catch (error) {
       setState("error");
+      leave();
     }
   }
 

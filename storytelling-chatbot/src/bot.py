@@ -21,7 +21,6 @@ from dailyai.services.elevenlabs_ai_service import ElevenLabsTTSService
 from dailyai.services.open_ai_services import OpenAILLMService
 from dailyai.services.fal_ai_services import FalImageGenService
 
-from services.groq import GroqLLMService
 from processors import StoryProcessor, StoryImageProcessor
 from prompts import LLM_BASE_PROMPT, LLM_INTRO_PROMPT, CUE_USER_TURN
 from utils.helpers import load_sounds, load_images
@@ -88,11 +87,6 @@ async def main(room_url, token=None):
             key=os.getenv("FAL_KEY"),
         )
 
-        groq_service = GroqLLMService(
-            api_key=os.getenv("GROQ_API_KEY"),
-            model="mixtral-8x7b-32768"
-        )
-
         # --------------- Setup ----------------- #
 
         message_history = [LLM_BASE_PROMPT]
@@ -105,8 +99,7 @@ async def main(room_url, token=None):
         # -------------- Processors ------------- #
 
         story_processor = StoryProcessor(message_history, story_pages)
-        image_processor = StoryImageProcessor(
-            groq_service, fal_service, story_pages)
+        image_processor = StoryImageProcessor(fal_service, story_pages)
 
         # -------------- Story Loop ------------- #
 
