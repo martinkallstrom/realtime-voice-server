@@ -70,9 +70,9 @@ Yes, kind of.
 
 These demos attempt to keep things simple and are unopinionated regarding environment or scalability.
 
-We're using FastAPI to spawn a subprocess for the bots / agents &mdash; useful for small tests, but not so great for production grade apps with many concurrent users. You can see how this works in each projects `start` endpoint in `server.py`.
+We're using FastAPI to spawn a subprocess for the bots / agents &mdash; useful for small tests, but not so great for production grade apps with many concurrent users. You can see how this works in each project's `start` endpoint in `server.py`.
 
-Creating virualized worker pools and on-demand instances is out of scope for these examples, but we have shared various implementation ideas [here](https://daily-co.github.io/dailyai-docs/docs/deploying-your-bot).
+Creating virtualized worker pools and on-demand instances is out of scope for these examples, but we have shared various implementation ideas [here](https://daily-co.github.io/dailyai-docs/docs/deploying-your-bot).
 
 For projects that have CUDA as a requirement, such as Moondream Chatbot, be sure to deploy to a GPU-powered platform (such as [fly.io](https://fly.io) or [Runpod](https://runpod.io).)
 
