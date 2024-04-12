@@ -3,6 +3,3 @@ fastapi
 uvicorn
 requests
 python-dotenv
-
-# Services
-groq
