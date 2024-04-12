@@ -2,7 +2,7 @@
 
 # Storytelling Chat Bot
 
-![Storytelling Chat Bot](frontend/app/opengraph-image.png){:width="420px"}
+<img src="frontend/app/opengraph-image.png" width="420px">
 
 This example shows how to build a voice-driven interactive storytelling experience.
 It periodically prompts the user for input for a 'choose your own adventure' style experience.
