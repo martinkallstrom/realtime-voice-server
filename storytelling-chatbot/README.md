@@ -1,10 +1,13 @@
+[![Try](https://img.shields.io/badge/try_it-here-blue)](https://storytelling-chatbot.fly.dev)
+
 # Storytelling Chat Bot
 
-[video]
+![Storytelling Chat Bot](frontend/app/opengraph-image.png)
 
 This example shows how to build a voice-driven interactive storytelling experience.
 It periodically prompts the user for input for a 'choose your own adventure' style experience.
-We add a bit of visual flair to our story by generating images at lightning speed.
+
+We add visual elements to the story by generating images at lightning speed using Groq and Fal.
 
 It uses the following AI services:
 
@@ -14,15 +17,15 @@ Transcribes inbound participant voice media to text.
 
 **Anthropic (Claude 3) - LLM**
 
-Our creative writer LLM. You can see the context used to prompt it here: ...
+Our creative writer LLM. You can see the context used to prompt it [here](src/prompts.py)
 
 **Eleven - Labs Text-to-Speech**
 
-Streams the LLM response to audio
+Converts and streams the LLM response from text to audio
 
 **Fal.ai - Image Generation**
 
-Adds pictures to our story (really fast!) Prompting is quite key for style consistency, see here: ...
+Adds pictures to our story (really fast!) Prompting is quite key for style consistency, so we use Groq to turn the story into a short image prompt.
 
 ---
 
@@ -30,13 +33,13 @@ Adds pictures to our story (really fast!) Prompting is quite key for style consi
 
 **Install requirements**
 
-```
+```shell
 pip install -r requirements.txt
 ```
 
 **Create environment file and set variables:**
 
-```
+```shell
 mv env.example .env
 ```
 
@@ -44,13 +47,13 @@ mv env.example .env
 
 This project uses a custom frontend, which needs to built. Note: this is done automatically as part of the Docker deployment.
 
-```
+```shell
 cd frontend/
 npm install / yarn
 npm run build
 ```
 
-The build UI files can be found in `frontend/public`
+The build UI files can be found in `frontend/out`
 
 ## Running it locally
 
@@ -68,12 +71,14 @@ If you'd like to run a custom domain or port:
 
 ## How does it work?
 
-...
+WIP
 
 ---
 
 ## Deploying
 
-...
+WIP
 
 `docker run -p 7860:7860 --env-file ./.env username/repo:tag`
+
+`fly launch`

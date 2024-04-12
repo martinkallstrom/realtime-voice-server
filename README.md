@@ -1,5 +1,5 @@
 [![PyPI](https://img.shields.io/pypi/v/dailyai)](https://pypi.org/project/dailyai)
-[![PyPI](https://img.shields.io/badge/docs-docusaurus)](https://daily-co.github.io/dailyai-docs/docs/intro)
+[![Docs](https://img.shields.io/badge/docs-docusaurus)](https://daily-co.github.io/dailyai-docs/docs/intro)
 
 # Daily AI &mdash; Examples
 

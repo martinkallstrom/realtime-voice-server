@@ -20,6 +20,3 @@ primary_region = 'sjc'
   memory = '2gb'
   cpu_kind = 'shared'
   cpus = 2
-
-[env]
-  NEXT_PUBLIC_SITE_URL = 'https://storytelling-chatbot.fly.dev'
