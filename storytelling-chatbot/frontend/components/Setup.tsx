@@ -29,10 +29,10 @@ export const Setup: React.FC<SetupProps> = ({ handleStart }) => {
             <>
               <p className="text-gray-600 leading-relaxed text-pretty">
                 This app demos a voice-controlled storytelling chatbot. It will
-                start with the bot asking you what kind of story you'd like to
-                hear (e.g. a fairy tale, a mystery, etc.). After each scene, the
-                bot will pause to ask for your input. Direct the story any way
-                you choose!
+                start with the bot asking you what kind of story you&apos;d like
+                to hear (e.g. a fairy tale, a mystery, etc.). After each scene,
+                the bot will pause to ask for your input. Direct the story any
+                way you choose!
               </p>
               <p className="flex flex-row gap-2 text-gray-600 font-medium">
                 <IconEar size={24} /> For best results, try in a quiet
@@ -42,8 +42,9 @@ export const Setup: React.FC<SetupProps> = ({ handleStart }) => {
           ) : (
             <>
               <p className="text-gray-600 leading-relaxed text-pretty">
-                Since you'll be talking to Storybot, we need to make sure it can
-                hear you! Please configure your microphone and speakers below.
+                Since you&apos;ll be talking to Storybot, we need to make sure
+                it can hear you! Please configure your microphone and speakers
+                below.
               </p>
               <DevicePicker />
             </>
