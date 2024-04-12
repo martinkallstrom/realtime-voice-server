@@ -1,0 +1,18 @@
+.transcript{
+    background-color: black;
+}
+
+.sentence{
+    background-color: black;
+    opacity: 1;
+    animation: fadeOut 2.5s linear forwards;
+    animation-delay: 1s;
+}
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}

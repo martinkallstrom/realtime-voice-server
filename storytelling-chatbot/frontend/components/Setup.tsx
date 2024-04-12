@@ -24,6 +24,7 @@ export const Setup: React.FC<SetupProps> = ({ handleStart }) => {
           <h1 className="text-4xl font-bold text-pretty tracking-tighter mb-4">
             Welcome to <span className="text-sky-500">Storytime</span>
           </h1>
+
           {state === "intro" ? (
             <>
               <p className="text-gray-600 leading-relaxed text-pretty">

@@ -17,7 +17,7 @@ export default function UserInputIndicator({ active }: Props) {
   useAppMessage({
     onAppMessage: (e: DailyEventObjectAppMessage<any>) => {
       if (e.fromId && e.fromId === "transcription") {
-        if (e.data.user_id === "") {
+        if (e.data.user_id === "" && e.data.is_final) {
           setTranscription((t) => [...t, ...e.data.text.split(" ")]);
         }
       }
