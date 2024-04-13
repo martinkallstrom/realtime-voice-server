@@ -4,7 +4,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Space_Grotesk, Space_Mono } from "next/font/google";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/app/utils";
 
 // Font
 const sans = Space_Grotesk({
