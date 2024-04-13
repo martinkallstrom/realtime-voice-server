@@ -49,9 +49,8 @@ class StoryImageProcessor(FrameProcessor):
         _fal_service (FALService): The FAL service, generates the images (fast fast!).
     """
 
-    def __init__(self, fal_service, story_pages):
+    def __init__(self, fal_service):
         self._fal_service = fal_service
-        self._story = story_pages
 
     async def process_frame(self, frame: Frame) -> AsyncGenerator[Frame, None]:
         if isinstance(frame, StoryImageFrame):
