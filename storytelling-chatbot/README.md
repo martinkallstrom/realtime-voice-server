@@ -7,25 +7,29 @@
 This example shows how to build a voice-driven interactive storytelling experience.
 It periodically prompts the user for input for a 'choose your own adventure' style experience.
 
-We add visual elements to the story by generating images at lightning speed using Groq and Fal.
+We add visual elements to the story by generating images at lightning speed using Fal.
 
-It uses the following AI services:
+<img src="image.png" width="420px">
+
+---
+
+### It uses the following AI services:
 
 **Deepgram - Speech-to-Text**
 
 Transcribes inbound participant voice media to text.
 
-**Anthropic (Claude 3) - LLM**
+**OpenAI (GP4 3) - LLM**
 
 Our creative writer LLM. You can see the context used to prompt it [here](src/prompts.py)
 
-**Eleven - Labs Text-to-Speech**
+**ElevenLabs - Text-to-Speech**
 
 Converts and streams the LLM response from text to audio
 
 **Fal.ai - Image Generation**
 
-Adds pictures to our story (really fast!) Prompting is quite key for style consistency, so we use Groq to turn the story into a short image prompt.
+Adds pictures to our story (really fast!) Prompting is quite key for style consistency, so we task the LLM to turn each story page into a short image prompt.
 
 ---
 
@@ -67,11 +71,16 @@ If you'd like to run a custom domain or port:
 
 ➡️ Open the host URL in your browser
 
+> [!IMPORTANT]
+> Whilst working on the frontend code, please `yarn run dev`
+> and open the NextJS hosted service vs. the Python server.
+> (Usually localhost:3000.)
+
 ---
 
 ## How does it work?
 
-WIP
+todo
 
 ---
 
@@ -79,6 +88,7 @@ WIP
 
 WIP
 
-`docker run -p 7860:7860 --env-file ./.env username/repo:tag`
+## Improvements to make
 
-`fly launch`
+- Wait for track_started event to avoid rushed intro
+- Show 5 minute timer on the UI
